@@ -13,26 +13,10 @@ model Category {
   image               AdminMedia?                @relation(fields: [imageId], references: [id], onDelete: SetNull)
   products            Product[]
   secondaryCategories ProductSecondaryCategory[]
-  asChild             CategoryHierarchy[]        @relation("ChildCategory")
-  asParent            CategoryHierarchy[]        @relation("ParentCategory")
 
   @@index([status])
   @@index([deletedAt])
   @@map("categories")
-}
-
-model CategoryHierarchy {
-  id         String @id @default(uuid())
-  categoryId String
-  parentId   String
-
-  category Category @relation("ChildCategory", fields: [categoryId], references: [id], onDelete: Cascade)
-  parent   Category @relation("ParentCategory", fields: [parentId], references: [id], onDelete: Cascade)
-
-  @@unique([categoryId, parentId])
-  @@index([categoryId])
-  @@index([parentId])
-  @@map("category_hierarchy")
 }
 
 model ProductSecondaryCategory {

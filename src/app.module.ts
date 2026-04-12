@@ -12,6 +12,8 @@ import configuration from './config/configuration';
 import { AppConfigModule } from './config/app_config/app_config.module';
 import { GlobalExceptionFilter } from './common/filters/global.exception.handler';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { ProductVariantAdminModule } from './api/admin/product-variants/product-variant-admin.module';
+import { ProductAttributeAdminModule } from './api/admin/product-attributes/product-attribute-admin.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     ]),
     AppConfigModule,
     PrismaModule,
+    ProductVariantAdminModule,
+    ProductAttributeAdminModule,
   ],
   controllers: [AppController],
   providers: [
@@ -56,4 +60,4 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

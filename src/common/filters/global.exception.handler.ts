@@ -8,8 +8,7 @@ import {
 import { Response } from 'express';
 import { ZodError } from 'zod';
 import { ZodValidationException } from 'nestjs-zod';
-import { sendResponse } from '../helpers/send.reponse';
-
+import { sendResponse } from '../helpers/send.response';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {

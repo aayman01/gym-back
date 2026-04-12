@@ -3,9 +3,9 @@ import {
   ProductVariantRepository,
   ProductVariantAdminPayload,
 } from './product-variant.repository';
-import { PaginationHelper } from '../../common/helpers/pagination.helper';
-import { IPaginatedResponse } from '../../common/types/pagination.types';
-import { PaginatedSearchQueryDto } from '../../common/dto/paginated-search-query.dto';
+import { PaginationHelper } from '../../../common/helpers/pagination.helper';
+import { IPaginatedResponse } from '../../../common/types/pagination.types';
+import { PaginatedSearchQueryDto } from '../../../common/dto/paginated-search-query.dto';
 
 export type ProductVariantAdminListItem = {
   id: string;
@@ -53,13 +53,9 @@ export class ProductVariantAdminService {
   }
 
   async findOne(variantId: string): Promise<ProductVariantAdminListItem> {
-    const variant =
-      await this.productVariantRepository.findOneById(variantId);
+    const variant = await this.productVariantRepository.findOneById(variantId);
 
-    if (
-      !variant ||
-      variant.product.deletedAt != null
-    ) {
+    if (!variant || variant.product.deletedAt != null) {
       throw new NotFoundException('Variant not found');
     }
 
@@ -69,13 +65,8 @@ export class ProductVariantAdminService {
   private mapVariant(
     variant: ProductVariantAdminPayload,
   ): ProductVariantAdminListItem {
-    const {
-      productId,
-      attributes,
-      inventory,
-      product,
-      ...variantScalars
-    } = variant;
+    const { productId, attributes, inventory, product, ...variantScalars } =
+      variant;
 
     return {
       ...variantScalars,

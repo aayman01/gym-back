@@ -15,6 +15,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { ProductVariantAdminModule } from './api/admin/product-variants/product-variant-admin.module';
 import { ProductAttributeAdminModule } from './api/admin/product-attributes/product-attribute-admin.module';
 import { CategoryAdminModule } from './api/admin/categories/category-admin.module';
+import { BrandAdminModule } from './api/admin/brands/brand-admin.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { CategoryAdminModule } from './api/admin/categories/category-admin.modul
     ProductVariantAdminModule,
     ProductAttributeAdminModule,
     CategoryAdminModule,
+    BrandAdminModule,
   ],
   controllers: [AppController],
   providers: [

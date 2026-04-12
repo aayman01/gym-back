@@ -1,0 +1,140 @@
+model StoreConfig {
+  id                     String                @id @default(uuid())
+  brandName              String                @db.VarChar(255)
+  description            String?               @db.Text
+  currency               String                @default("USD") @db.VarChar(3)
+  logoId                 String?
+  faviconId              String?
+  primaryColor           String?               @db.VarChar(20)
+  secondaryColor         String?               @db.VarChar(20)
+  fontColor              String?               @db.VarChar(20)
+  bannerLayoutType       EcommerceBannerLayout @default(FULL_WIDTH_SLIDER)
+  showHomeTopHeader      Boolean               @default(true)
+  showHomeCategoryNavbar Boolean               @default(true)
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  deletedAt              DateTime?
+
+  logo    AdminMedia? @relation("StoreConfigLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  favicon AdminMedia? @relation("StoreConfigFavicon", fields: [faviconId], references: [id], onDelete: SetNull)
+
+  @@index([deletedAt])
+  @@map("store_config")
+}
+
+model Banner {
+  id           String                 @id @default(uuid())
+  title        String                 @db.VarChar(255)
+  description  String?                @db.Text
+  buttonText   String?                @db.VarChar(50)
+  buttonLink   String?                @db.VarChar(500)
+  mediaId      String?
+  layoutType   EcommerceBannerLayout? @default(FULL_WIDTH_SLIDER)
+  displayOrder Int                    @default(0)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  media        AdminMedia?         @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+  sliderImages BannerSliderImage[]
+
+  @@index([displayOrder])
+  @@map("banners")
+}
+
+model BannerSliderImage {
+  id           String   @id @default(uuid())
+  bannerId     String
+  mediaId      String
+  title        String?  @db.VarChar(255)
+  slug         String?  @db.VarChar(255)
+  url          String?  @db.VarChar(500)
+  isPublic     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  banner Banner     @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  media  AdminMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([bannerId])
+  @@index([displayOrder])
+  @@map("banner_slider_images")
+}
+
+model Tax {
+  id        String    @id @default(uuid())
+  name      String    @db.VarChar(150)
+  rate      Decimal   @db.Decimal(10, 2)
+  type      TaxType
+  isDefault Boolean   @default(false)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  products Product[]
+
+  @@index([isActive])
+  @@map("taxes")
+}
+
+model Coupon {
+  id              String       @id @default(uuid())
+  code            String       @unique @db.VarChar(50)
+  type            DiscountType
+  value           Decimal      @db.Decimal(11, 2)
+  startDate       DateTime
+  endDate         DateTime
+  maxRedemptions  Int?
+  redemptionCount Int          @default(0)
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
+
+  orders Order[]
+
+  @@map("coupons")
+}
+
+model Brand {
+  id        String     @id @default(uuid())
+  name      String     @db.VarChar(255)
+  slug      String     @unique @db.VarChar(255)
+  logoId    String?
+  order     Int        @default(0)
+  status    ItemStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  logo     AdminMedia? @relation(fields: [logoId], references: [id], onDelete: SetNull)
+  products Product[]
+
+  @@index([status])
+  @@index([deletedAt])
+  @@map("brands")
+}
+
+model CustomerAddress {
+  id              String   @id @default(uuid())
+  customerId      String
+  label           String?  @db.VarChar(100)
+  isDefault       Boolean  @default(false)
+  recipientName   String   @db.VarChar(255)
+  phone           String   @db.VarChar(50)
+  shippingPlaceId String?
+  country         String   @db.VarChar(2)
+  stateOrDivision String   @db.VarChar(255)
+  city            String   @db.VarChar(255)
+  postalCode      String?  @db.VarChar(50)
+  addressLine1    String   @db.VarChar(500)
+  addressLine2    String?  @db.VarChar(500)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  customer      User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  shippingPlace ShippingPlace? @relation(fields: [shippingPlaceId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@map("customer_addresses")
+}

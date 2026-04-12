@@ -1,0 +1,32 @@
+model Review {
+  id                 String    @id @default(uuid())
+  orderItemId        String    @unique
+  rating             Int
+  comment            String?   @db.Text
+  isVerifiedPurchase Boolean   @default(true)
+  adminFlag          String?   @db.VarChar(50)
+  adminComment       String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  orderItem OrderItem     @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  images    ReviewImage[]
+
+  @@index([orderItemId])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id        String    @id @default(uuid())
+  reviewId  String
+  imageId   String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  review Review     @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  image  AdminMedia @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_images")
+}

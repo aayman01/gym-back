@@ -1,0 +1,65 @@
+/// Admin-managed assets (products, storefront, reviews). Not for end-user uploads.
+model AdminMedia {
+  id        String   @id @default(uuid())
+  url       String
+  key       String   @unique
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productThumbnails   Product[]            @relation("ProductThumbnail")
+  productImages       ProductImage[]
+  productSampleImages ProductSampleImage[]
+  categoryImages      Category[]
+  brandLogos          Brand[]
+  storeConfigLogos    StoreConfig[]        @relation("StoreConfigLogo")
+  storeConfigFavicons StoreConfig[]        @relation("StoreConfigFavicon")
+  banners             Banner[]
+  bannerSliderImages  BannerSliderImage[]
+  reviewImages        ReviewImage[]
+
+  @@map("admin_media")
+}
+
+/// User-uploaded files (profile, attachments). Do not reference from admin commerce models.
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  key       String   @unique
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("media")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  firstName    String    @db.VarChar(150)
+  lastName     String    @db.VarChar(150)
+  phone        String?   @db.VarChar(50)
+  role         UserRole  @default(CUSTOMER)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  cart            Cart?
+  wishlist        Wishlist?
+  orders          Order[]
+  addresses       CustomerAddress[]
+  pendingPayments PendingPayment[]
+
+  returnRequestsAsCustomer ReturnRequest[]        @relation("ReturnRequestCustomer")
+  returnRequestsRequested  ReturnRequest[]        @relation("ReturnRequestRequestedBy")
+  returnRequestsReviewed   ReturnRequest[]        @relation("ReturnRequestReviewedBy")
+  returnRequestComments    ReturnRequestComment[] @relation("ReturnRequestCommentAuthor")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}

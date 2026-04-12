@@ -1,0 +1,55 @@
+model PaymentMethod {
+  id        String             @id @default(uuid())
+  code      PaymentGatewayCode @unique
+  name      String             @db.VarChar(150)
+  imageUrl  String?            @db.VarChar(500)
+  isActive  Boolean            @default(true)
+  order     Int                @default(0)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  orders Order[]
+
+  @@map("payment_methods")
+}
+
+model StripePaymentIntent {
+  id              String   @id @default(uuid())
+  orderId         String
+  paymentIntentId String   @unique @db.VarChar(255)
+  status          String   @db.VarChar(50)
+  amount          Decimal  @db.Decimal(11, 2)
+  currency        String   @db.VarChar(10)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("stripe_payment_intents")
+}
+
+model PendingPayment {
+  id              String   @id @default(uuid())
+  cartId          String
+  customerId      String
+  paymentIntentId String?  @unique @db.VarChar(255)
+  amount          Decimal  @db.Decimal(11, 2)
+  status          String   @db.VarChar(50)
+  cartHash        String?  @db.VarChar(64)
+  subtotal        Decimal  @default(0) @db.Decimal(11, 2)
+  tax             Decimal  @default(0) @db.Decimal(11, 2)
+  shipping        Decimal  @default(0) @db.Decimal(11, 2)
+  discount        Decimal  @default(0) @db.Decimal(11, 2)
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cart     Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  customer User @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([cartId])
+  @@index([customerId])
+  @@map("pending_payments")
+}

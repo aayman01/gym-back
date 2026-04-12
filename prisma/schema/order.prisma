@@ -1,0 +1,116 @@
+model Order {
+  id                 String            @id @default(uuid())
+  orderNumber        String            @unique @db.VarChar(20)
+  customerId         String
+  status             OrderStatus       @default(PENDING)
+  paymentStatus      PaymentStatus     @default(PENDING)
+  returnStatus       OrderReturnStatus @default(NONE)
+  currency           String            @default("USD") @db.VarChar(3)
+  totalAmount        Decimal           @db.Decimal(11, 2)
+  taxAmount          Decimal           @default(0.00) @db.Decimal(11, 2)
+  shippingAmount     Decimal           @default(0.00) @db.Decimal(11, 2)
+  discountAmount     Decimal           @default(0.00) @db.Decimal(11, 2)
+  paymentMethodId    String?
+  couponId           String?
+  gatewayReferenceId String?           @db.VarChar(255)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  deletedAt          DateTime?
+
+  customer       User                  @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  paymentMethod  PaymentMethod?        @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  coupon         Coupon?               @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  billingInfo    OrderBillingInfo?
+  shippingInfo   OrderShippingInfo?
+  events         OrderEvent[]
+  stripeIntents  StripePaymentIntent[]
+  returnRequests ReturnRequest[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([returnStatus])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String   @id @default(uuid())
+  orderId          String
+  productId        String?
+  variantId        String?
+  snapshottedTitle String   @db.VarChar(255)
+  snapshottedSku   String   @db.VarChar(100)
+  snapshottedUnit  String   @db.VarChar(50)
+  price            Decimal  @db.Decimal(11, 2)
+  quantity         Int
+  lineTotal        Decimal  @db.Decimal(11, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  order              Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product            Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant            ProductVariant?     @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  review             Review?
+  returnRequestItems ReturnRequestItem[]
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model OrderBillingInfo {
+  id              String   @id @default(uuid())
+  orderId         String   @unique
+  recipientName   String   @db.VarChar(255)
+  addressLine1    String   @db.VarChar(500)
+  addressLine2    String?  @db.VarChar(500)
+  city            String   @db.VarChar(255)
+  stateOrDivision String   @db.VarChar(255)
+  postalCode      String?  @db.VarChar(50)
+  country         String   @db.VarChar(2)
+  phone           String   @db.VarChar(50)
+  email           String   @db.VarChar(255)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_billing_info")
+}
+
+model OrderShippingInfo {
+  id              String   @id @default(uuid())
+  orderId         String   @unique
+  recipientName   String   @db.VarChar(255)
+  phone           String   @db.VarChar(50)
+  addressLine1    String   @db.VarChar(500)
+  addressLine2    String?  @db.VarChar(500)
+  city            String   @db.VarChar(255)
+  stateOrDivision String   @db.VarChar(255)
+  postalCode      String?  @db.VarChar(50)
+  country         String   @db.VarChar(2)
+  shippingPlaceId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shippingPlace ShippingPlace? @relation(fields: [shippingPlaceId], references: [id], onDelete: SetNull)
+
+  @@map("order_shipping_info")
+}
+
+model OrderEvent {
+  id         String              @id @default(uuid())
+  orderId    String
+  eventType  OrderEventType
+  occurredAt DateTime            @default(now())
+  actionBy   OrderEventActionBy?
+  metadata   Json?
+  createdAt  DateTime            @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_events")
+}

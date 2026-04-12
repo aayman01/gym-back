@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===========================================================================
+// ENUMS
+// ===========================================================================
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+  SERVICE
+}
+
+enum ItemStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+enum SellingUnit {
+  PIECE
+  KG
+  GRAM
+  LITER
+  MILLILITER
+  METER
+  CENTIMETER
+  SQUARE_METER
+  CUBIC_METER
+  DOZEN
+  PACK
+  BOX
+  SET
+  PAIR
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum OrderEventType {
+  ORDER_PLACED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  STATUS_CHANGED
+  NOTE_ADDED
+  REFUND_INITIATED
+  REFUND_COMPLETED
+  ORDER_CANCELLED
+}
+
+enum OrderEventActionBy {
+  CUSTOMER
+  ADMIN
+  SYSTEM
+}
+
+enum CollectionType {
+  DEFAULT
+  BANNER
+}
+
+enum TaxType {
+  PERCENTAGE
+  FIXED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PaymentGatewayCode {
+  STRIPE
+  COD
+  BANK_TRANSFER
+  PAYPAL
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum InventoryMovementDirection {
+  IN
+  OUT
+}
+
+enum InventoryTransactionType {
+  SALE
+  STOCK_IN
+  STOCK_OUT
+  RETURN
+  CANCELLED
+  RESERVATION
+  RESERVATION_RELEASE
+}
+
+enum OrderReturnStatus {
+  NONE
+  PARTIALLY_RETURNED
+  FULLY_RETURNED
+}
+
+enum ReturnRequestStatus {
+  PENDING
+  APPROVED
+  PARTIALLY_APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ReturnRequestItemStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReturnRequestEventType {
+  CREATED
+  SUBMITTED
+  REVIEWED
+  APPROVED
+  PARTIALLY_APPROVED
+  REJECTED
+  CANCELLED
+  COMMENT_ADDED
+}
+
+enum ReturnRequestActionBy {
+  CUSTOMER
+  ADMIN
+}
+
+enum EcommerceBannerLayout {
+  FULL_WIDTH_SLIDER
+  SLIDER_WITH_STATICS
+  SLIDER_WITH_STATICS_GRID
+}

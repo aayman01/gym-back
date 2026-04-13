@@ -17,6 +17,7 @@ import { ProductAttributeAdminModule } from './api/admin/product-attributes/prod
 import { CategoryAdminModule } from './api/admin/categories/category-admin.module';
 import { BrandAdminModule } from './api/admin/brands/brand-admin.module';
 import { TaxAdminModule } from './api/admin/taxes/tax-admin.module';
+import { ShippingMethodAdminModule } from './api/admin/shipping-methods/shipping-method-admin.module';
 import { AdminAuthModule } from './api/admin/auth/admin-auth.module';
 import { AdminSessionGuard } from './common/guards/admin-session.guard';
 import { AdminCsrfGuard } from './common/guards/admin-csrf.guard';
@@ -47,6 +48,7 @@ import { AdminCsrfGuard } from './common/guards/admin-csrf.guard';
     CategoryAdminModule,
     BrandAdminModule,
     TaxAdminModule,
+    ShippingMethodAdminModule,
     AdminAuthModule,
   ],
   controllers: [AppController],

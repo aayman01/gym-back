@@ -16,6 +16,10 @@ import { ProductVariantAdminModule } from './api/admin/product-variants/product-
 import { ProductAttributeAdminModule } from './api/admin/product-attributes/product-attribute-admin.module';
 import { CategoryAdminModule } from './api/admin/categories/category-admin.module';
 import { BrandAdminModule } from './api/admin/brands/brand-admin.module';
+import { TaxAdminModule } from './api/admin/taxes/tax-admin.module';
+import { AdminAuthModule } from './api/admin/auth/admin-auth.module';
+import { AdminSessionGuard } from './common/guards/admin-session.guard';
+import { AdminCsrfGuard } from './common/guards/admin-csrf.guard';
 
 @Module({
   imports: [
@@ -42,6 +46,8 @@ import { BrandAdminModule } from './api/admin/brands/brand-admin.module';
     ProductAttributeAdminModule,
     CategoryAdminModule,
     BrandAdminModule,
+    TaxAdminModule,
+    AdminAuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -49,6 +55,14 @@ import { BrandAdminModule } from './api/admin/brands/brand-admin.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AdminSessionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AdminCsrfGuard,
     },
     {
       provide: APP_PIPE,

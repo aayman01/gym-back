@@ -23,4 +23,20 @@ export class AppConfigService {
     get allowedOrigins(): AppEnv['ALLOWED_ORIGINS'] {
         return this.configService.getOrThrow('ALLOWED_ORIGINS');
     }
+
+    get adminJwtAccessSecret(): AppEnv['ADMIN_JWT_ACCESS_SECRET'] {
+        return this.configService.getOrThrow('ADMIN_JWT_ACCESS_SECRET');
+    }
+
+    get adminJwtRefreshSecret(): AppEnv['ADMIN_JWT_REFRESH_SECRET'] {
+        return this.configService.getOrThrow('ADMIN_JWT_REFRESH_SECRET');
+    }
+
+    get adminJwtAccessExpires(): AppEnv['ADMIN_JWT_ACCESS_EXPIRES'] {
+        return this.configService.getOrThrow('ADMIN_JWT_ACCESS_EXPIRES');
+    }
+
+    get adminJwtRefreshExpires(): AppEnv['ADMIN_JWT_REFRESH_EXPIRES'] {
+        return this.configService.getOrThrow('ADMIN_JWT_REFRESH_EXPIRES');
+    }
 }

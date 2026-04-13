@@ -9,6 +9,10 @@ export const envSchema = z.object({
     ALLOWED_ORIGINS: z
         .string()
         .transform((val) => val.split(',')),
+    ADMIN_JWT_ACCESS_SECRET: z.string().min(16),
+    ADMIN_JWT_REFRESH_SECRET: z.string().min(16),
+    ADMIN_JWT_ACCESS_EXPIRES: z.string().default('15m'),
+    ADMIN_JWT_REFRESH_EXPIRES: z.string().default('7d'),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

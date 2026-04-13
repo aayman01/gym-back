@@ -5,6 +5,7 @@ import { Logger } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { ZodExceptionFilter } from './common/filters/zod-exception.filter';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 
 const logger = new Logger('Bootstrap');
 
@@ -16,6 +17,7 @@ async function bootstrap() {
 
   // Security
   app.use(helmet());
+  app.use(cookieParser());
 
   // Global filters
   app.useGlobalFilters(new ZodExceptionFilter());
@@ -33,7 +35,7 @@ async function bootstrap() {
     origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-xsrf-token'],
   });
 
   // Verify database connection

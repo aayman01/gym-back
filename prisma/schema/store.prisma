@@ -122,7 +122,6 @@ model CustomerAddress {
   isDefault       Boolean  @default(false)
   recipientName   String   @db.VarChar(255)
   phone           String   @db.VarChar(50)
-  shippingPlaceId String?
   country         String   @db.VarChar(2)
   stateOrDivision String   @db.VarChar(255)
   city            String   @db.VarChar(255)
@@ -132,8 +131,7 @@ model CustomerAddress {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  customer      User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  shippingPlace ShippingPlace? @relation(fields: [shippingPlaceId], references: [id], onDelete: SetNull)
+  customer User @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
   @@map("customer_addresses")

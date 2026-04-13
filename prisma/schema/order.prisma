@@ -90,12 +90,12 @@ model OrderShippingInfo {
   stateOrDivision String   @db.VarChar(255)
   postalCode      String?  @db.VarChar(50)
   country         String   @db.VarChar(2)
-  shippingPlaceId String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  shippingMethodId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  shippingPlace ShippingPlace? @relation(fields: [shippingPlaceId], references: [id], onDelete: SetNull)
+  order           Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shippingMethod  ShippingMethod?  @relation(fields: [shippingMethodId], references: [id], onDelete: SetNull)
 
   @@map("order_shipping_info")
 }

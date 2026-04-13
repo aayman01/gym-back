@@ -1,51 +1,15 @@
-model ShippingOption {
-  id          String    @id @default(uuid())
-  title       String    @db.VarChar(150)
-  singlePrice Boolean   @default(false)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+model ShippingMethod {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(255)
+  price        Decimal  @db.Decimal(10, 2)
+  isActive     Boolean  @default(true)
+  deliveryDays Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  places   ShippingPlace[]
-  products Product[]
+  products           Product[]
+  orderShippingInfos OrderShippingInfo[]
 
-  @@map("shipping_options")
-}
-
-model ShippingPlace {
-  id              String   @id @default(uuid())
-  optionId        String
-  country         String   @db.VarChar(100)
-  state           String?  @db.VarChar(100)
-  price           Decimal  @db.Decimal(10, 2)
-  deliveryDays    Int
-  isPickupEnabled Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  option            ShippingOption        @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  pickupPoints      ShippingPickupPoint[]
-  orderShippingInfo OrderShippingInfo[]
-  customerAddresses CustomerAddress[]
-
-  @@index([optionId])
-  @@index([country])
-  @@map("shipping_places")
-}
-
-model ShippingPickupPoint {
-  id        String   @id @default(uuid())
-  placeId   String
-  name      String   @db.VarChar(255)
-  address   String   @db.VarChar(500)
-  lat       Decimal? @db.Decimal(10, 7)
-  lng       Decimal? @db.Decimal(10, 7)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  place ShippingPlace @relation(fields: [placeId], references: [id], onDelete: Cascade)
-
-  @@index([placeId])
-  @@map("shipping_pickup_points")
+  @@index([isActive])
+  @@map("shipping_methods")
 }

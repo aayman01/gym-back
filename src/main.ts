@@ -6,18 +6,20 @@ import { PrismaService } from './prisma/prisma.service';
 import { ZodExceptionFilter } from './common/filters/zod-exception.filter';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { json } from 'express';
 
 const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
-    rawBody: true,
+    bodyParser: false,
   });
 
   // Security
   app.use(helmet());
   app.use(cookieParser());
+  app.use(json({ limit: '12mb' }));
 
   // Global filters
   app.useGlobalFilters(new ZodExceptionFilter());

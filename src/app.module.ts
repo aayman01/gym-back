@@ -21,6 +21,10 @@ import { ShippingMethodAdminModule } from './api/admin/shipping-methods/shipping
 import { AdminAuthModule } from './api/admin/auth/admin-auth.module';
 import { AdminSessionGuard } from './common/guards/admin-session.guard';
 import { AdminCsrfGuard } from './common/guards/admin-csrf.guard';
+import { AdminMediaModule } from './api/admin/media/admin-media.module';
+import { AdminGalleryModule } from './api/admin/gallery/admin-gallery.module';
+import { ProductsAdminModule } from './api/admin/products/products-admin.module';
+import { PublicModule } from './api/public/public.module';
 
 @Module({
   imports: [
@@ -50,6 +54,10 @@ import { AdminCsrfGuard } from './common/guards/admin-csrf.guard';
     TaxAdminModule,
     ShippingMethodAdminModule,
     AdminAuthModule,
+    AdminMediaModule,
+    AdminGalleryModule,
+    ProductsAdminModule,
+    PublicModule,
   ],
   controllers: [AppController],
   providers: [

@@ -3,22 +3,33 @@ model AdminMedia {
   id        String   @id @default(uuid())
   url       String
   key       String   @unique
+  provider  String   @default("cloudinary")
+  format    String?
+  width     Int?
+  height    Int?
+  resourceType String @default("image")
   mimeType  String
   size      Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  productThumbnails   Product[]            @relation("ProductThumbnail")
-  productImages       ProductImage[]
-  productSampleImages ProductSampleImage[]
-  categoryImages      Category[]
-  brandLogos          Brand[]
-  storeConfigLogos    StoreConfig[]        @relation("StoreConfigLogo")
-  storeConfigFavicons StoreConfig[]        @relation("StoreConfigFavicon")
-  banners             Banner[]
-  bannerSliderImages  BannerSliderImage[]
-  reviewImages        ReviewImage[]
+  /// Fresh uploads before they are added to the admin gallery (used for reserve checks).
+  uploadedByAdminId String?
+  uploadedBy        Admin? @relation("AdminUploadedMedia", fields: [uploadedByAdminId], references: [id], onDelete: SetNull)
 
+  productThumbnails     Product[]            @relation("ProductThumbnail")
+  productVariantDisplay ProductVariant[]     @relation("ProductVariantDisplayImage")
+  productSampleImages   ProductSampleImage[]
+  galleryItem           AdminGalleryItem?
+  categoryImages            Category[]
+  brandLogos                Brand[]
+  storeConfigLogos          StoreConfig[]        @relation("StoreConfigLogo")
+  storeConfigFavicons       StoreConfig[]        @relation("StoreConfigFavicon")
+  banners                   Banner[]
+  bannerSliderImages        BannerSliderImage[]
+  reviewImages              ReviewImage[]
+
+  @@index([uploadedByAdminId])
   @@map("admin_media")
 }
 

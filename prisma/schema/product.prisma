@@ -65,7 +65,7 @@ model Product {
   shippingMethod      ShippingMethod?            @relation(fields: [shippingMethodId], references: [id], onDelete: SetNull)
   tax                 Tax?                       @relation(fields: [taxId], references: [id], onDelete: SetNull)
   variants            ProductVariant[]
-  images              ProductImage[]
+  /// Product-level and variant-level gallery images (canonical gallery table).
   sampleImages        ProductSampleImage[]
   secondaryCategories ProductSecondaryCategory[]
   collectionItems     CollectionItem[]
@@ -91,14 +91,16 @@ model ProductVariant {
   /// Legacy stock count; prefer `inventory.quantityOnHand` when `inventory` is present.
   quantity  Int        @default(0)
   isBase    Boolean    @default(false)
+  /// Primary image shown for this variant (separate from gallery `ProductSampleImage` rows).
+  displayImageId String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
   product               Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  displayImage          AdminMedia?               @relation("ProductVariantDisplayImage", fields: [displayImageId], references: [id], onDelete: SetNull)
   inventory             Inventory?
   inventoryTransactions InventoryTransaction[]
   attributes            ProductVariantAttribute[]
-  images                ProductImage[]
   sampleImages          ProductSampleImage[]
   cartItems             CartItem[]
   wishlistItems         WishlistItem[]
@@ -108,6 +110,7 @@ model ProductVariant {
   @@unique([productId, sku])
   @@index([productId])
   @@index([status])
+  @@index([displayImageId])
   @@map("product_variants")
 }
 
@@ -125,26 +128,6 @@ model ProductVariantAttribute {
   @@index([variantId])
   @@index([optionId])
   @@map("product_variant_attributes")
-}
-
-model ProductImage {
-  id        String   @id @default(uuid())
-  productId String
-  variantId String?
-  imageId   String
-  order     Int      @default(0)
-  isPrimary Boolean  @default(false)
-  altText   String?  @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  image   AdminMedia      @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-  @@index([productId])
-  @@index([variantId])
-  @@map("product_images")
 }
 
 model ProductSampleImage {

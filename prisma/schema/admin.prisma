@@ -7,9 +7,24 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sessions AdminSession[]
+  sessions           AdminSession[]
+  uploadedAdminMedia AdminMedia[] @relation("AdminUploadedMedia")
 
   @@map("admins")
+}
+
+/// Admin image library (pick from gallery or upload then optionally add here).
+model AdminGalleryItem {
+  id           String   @id @default(uuid())
+  mediaId      String   @unique
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  media AdminMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([displayOrder])
+  @@map("admin_gallery_items")
 }
 
 model AdminSession {

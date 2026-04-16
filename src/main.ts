@@ -37,7 +37,13 @@ async function bootstrap() {
     origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-xsrf-token'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-xsrf-token',
+      'x-guest-token',
+      'x-customer-id',
+    ],
   });
 
   // Verify database connection

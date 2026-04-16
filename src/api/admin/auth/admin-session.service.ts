@@ -4,25 +4,23 @@ import * as jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
 import { AppConfigService } from '../../../config/app_config/app_config.service';
 import { AdminRepository } from './admin.repository';
-import { AdminSessionRepository } from './admin-session.repository';
 import type { AdminSessionData } from './types/admin-session.types';
 
 @Injectable()
 export class AdminSessionService {
   constructor(
-    private readonly sessionRepository: AdminSessionRepository,
     private readonly adminRepository: AdminRepository,
     private readonly configService: AppConfigService,
   ) {}
 
-  generateTokens(sessionId: string) {
+  generateTokens(adminId: string) {
     const accessToken = this.signToken(
-      sessionId,
+      adminId,
       this.configService.adminJwtAccessSecret,
       this.configService.adminJwtAccessExpires,
     );
     const refreshToken = this.signToken(
-      sessionId,
+      adminId,
       this.configService.adminJwtRefreshSecret,
       this.configService.adminJwtRefreshExpires,
     );
@@ -30,17 +28,15 @@ export class AdminSessionService {
     return { accessToken, refreshToken };
   }
 
-  private signToken(sessionId: string, secret: string, expiresIn: string): string {
+  private signToken(
+    adminId: string,
+    secret: string,
+    expiresIn: string,
+  ): string {
     const options: SignOptions = {
       expiresIn: expiresIn as NonNullable<SignOptions['expiresIn']>,
     };
-    return jwt.sign({ sessionId }, secret, options);
-  }
-
-  async createSession(adminId: string) {
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    return this.sessionRepository.create(adminId, expiresAt);
+    return jwt.sign({ adminId }, secret, options);
   }
 
   async validateSession(accessToken: string): Promise<AdminSessionData | null> {
@@ -48,30 +44,21 @@ export class AdminSessionService {
       const payload = jwt.verify(
         accessToken,
         this.configService.adminJwtAccessSecret,
-      ) as { sessionId: string };
-
-      return this.validateSessionById(payload.sessionId);
+      ) as { adminId: string };
+      if (!payload?.adminId) {
+        return null;
+      }
+      return this.getAdminSessionData(payload.adminId);
     } catch {
       return null;
     }
   }
 
-  async validateSessionById(
-    sessionId: string,
+  private async getAdminSessionData(
+    adminId: string,
   ): Promise<AdminSessionData | null> {
-    const session = await this.sessionRepository.findById(sessionId);
-    if (!session) {
-      return null;
-    }
-
-    if (session.expiresAt < new Date()) {
-      await this.sessionRepository.deleteByToken(session.token);
-      return null;
-    }
-
-    const admin = await this.adminRepository.findById(session.adminId);
+    const admin = await this.adminRepository.findById(adminId);
     if (!admin) {
-      await this.sessionRepository.deleteByToken(session.token);
       return null;
     }
 
@@ -88,14 +75,17 @@ export class AdminSessionService {
       const payload = jwt.verify(
         refreshToken,
         this.configService.adminJwtRefreshSecret,
-      ) as { sessionId: string };
+      ) as { adminId: string };
+      if (!payload?.adminId) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
 
-      const adminData = await this.validateSessionById(payload.sessionId);
+      const adminData = await this.getAdminSessionData(payload.adminId);
       if (!adminData) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const tokens = this.generateTokens(payload.sessionId);
+      const tokens = this.generateTokens(payload.adminId);
 
       return {
         ...tokens,
@@ -107,17 +97,7 @@ export class AdminSessionService {
   }
 
   async logout(accessToken: string): Promise<void> {
-    try {
-      const payload = jwt.decode(accessToken) as { sessionId: string } | null;
-      if (payload?.sessionId) {
-        const session = await this.sessionRepository.findById(payload.sessionId);
-        if (session) {
-          await this.sessionRepository.deleteByToken(session.token);
-        }
-      }
-    } catch {
-      // ignore decode errors on logout
-    }
+    // Stateless JWT sessions: nothing to delete server-side.
   }
 
   generateCsrfToken(): string {

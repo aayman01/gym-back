@@ -7,7 +7,6 @@ model Admin {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sessions           AdminSession[]
   uploadedAdminMedia AdminMedia[] @relation("AdminUploadedMedia")
 
   @@map("admins")
@@ -27,16 +26,3 @@ model AdminGalleryItem {
   @@map("admin_gallery_items")
 }
 
-model AdminSession {
-  id        String   @id @default(uuid())
-  adminId   String
-  token     String   @unique @db.VarChar(255)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
-
-  @@index([adminId])
-  @@map("admin_sessions")
-}

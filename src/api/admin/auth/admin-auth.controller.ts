@@ -89,7 +89,7 @@ export class AdminAuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = req.cookies?.admin_refresh_token;
+    const refreshToken = req.cookies?.admin_refresh_token as string;
     if (!refreshToken) {
       throw new UnauthorizedException('No refresh token found');
     }
@@ -138,7 +138,7 @@ export class AdminAuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const accessToken = req.cookies?.admin_access_token;
+    const accessToken = req.cookies?.admin_access_token as string;
     if (accessToken) {
       await this.adminAuthService.logout(accessToken);
     }
@@ -155,7 +155,8 @@ export class AdminAuthController {
   }
 
   @Get('me')
-  async me(@CurrentAdmin() admin: AdminSessionData) {
+  @HttpCode(HttpStatus.OK)
+  me(@CurrentAdmin() admin: AdminSessionData) {
     return sendResponse({
       success: true,
       message: 'Session valid',

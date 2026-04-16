@@ -26,7 +26,10 @@ export class AdminAuthService {
     return `${buf.toString('hex')}.${salt}`;
   }
 
-  async comparePasswords(password: string, storedHash: string): Promise<boolean> {
+  async comparePasswords(
+    password: string,
+    storedHash: string,
+  ): Promise<boolean> {
     const [hash, salt] = storedHash.split('.');
     if (!hash || !salt) {
       return false;
@@ -72,8 +75,7 @@ export class AdminAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const session = await this.sessionService.createSession(admin.id);
-    const tokens = this.sessionService.generateTokens(session.id);
+    const tokens = this.sessionService.generateTokens(admin.id);
 
     return {
       ...tokens,

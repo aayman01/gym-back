@@ -1,98 +1,170 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# E-commerce / catalog API (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend for a **real catalog and storefront**: separate **admin (back-office)** and **public (storefront)** APIs, cookie-based admin sessions with refresh tokens, CSRF on mutating admin requests, guest-aware cart/wishlist, and a modular product domain (variants, attributes, taxes, shipping, media, gallery).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This is intentionally more than a thin CRUD layer: validation, rate limiting, security headers, structured errors, and a split data model you can extend toward orders, inventory, and returns (see `prisma/schema/`).
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Why this isn’t “just a simple e-commerce site”
 
-## Project setup
+| Area | What the backend actually does |
+|------|--------------------------------|
+| **Boundaries** | Admin vs public modules with different trust models (`src/api/admin/*`, `src/api/public/*`). |
+| **Admin auth** | JWT access + refresh in **HttpOnly cookies**, not a single bearer token in localStorage. |
+| **CSRF** | Double-submit token for unsafe methods in production (`XSRF-TOKEN` cookie + `x-xsrf-token` header). |
+| **Public identity** | Guest tokens for cart/wishlist via middleware + cookie/header (`GuestTokenMiddleware`). |
+| **Hardening** | Helmet, `@nestjs/throttler`, Zod env + request validation, CORS with `credentials: true`. |
+| **Catalog depth** | Products, variants, attributes, categories, brands, taxes, shipping, gallery, Cloudinary-backed media—not one generic “Product” table and done. |
 
-```bash
-$ pnpm install
+---
+
+## Authentication & security (how it works)
+
+### Admin (protected)
+
+1. **Login** (`POST /api/v1/admin/auth/login`) issues:
+   - `admin_access_token` — HttpOnly JWT (short-lived)
+   - `admin_refresh_token` — HttpOnly JWT (longer-lived)
+   - `XSRF-TOKEN` — **readable** cookie used with the header below
+
+2. **`AdminSessionGuard`** (global): non-`@Public()` routes require a valid `admin_access_token` cookie; payload is verified and the admin is loaded from the DB. See `src/common/guards/admin-session.guard.ts` and `src/api/admin/auth/admin-session.service.ts`.
+
+3. **`AdminCsrfGuard`** (global): for `POST`/`PUT`/`PATCH`/`DELETE` (not `GET`/`HEAD`/`OPTIONS`), in **non-development** environments, the `XSRF-TOKEN` cookie must match the `x-xsrf-token` header. Auth endpoints like login/register/refresh/logout are excluded. See `src/common/guards/admin-csrf.guard.ts`.
+
+4. **Refresh / logout**: `POST /api/v1/admin/auth/refresh` (uses refresh cookie), `POST /api/v1/admin/auth/logout` clears cookies. Session validation for the current user: `GET /api/v1/admin/auth/me`.
+
+Implementation detail: tokens are signed with `jsonwebtoken`; secrets and expiry come from env (`ADMIN_JWT_*`). Cookie `secure` / `sameSite` follow `NODE_ENV` in `admin-auth.controller.ts`.
+
+### Public (storefront)
+
+- Routes that must stay anonymous are marked **`@Public()`** so the admin session guard skips them (`src/common/decorators/public.decorator.ts`).
+- **Cart & wishlist** get a stable **`guestToken`** (header `x-guest-token` or cookie `guestToken`) via `GuestTokenMiddleware` wired in `src/api/public/public.module.ts`.
+- Optional **`x-customer-id`** is available for flows where the client identifies a logged-in customer (see `current-customer-id.decorator.ts`).
+
+### CORS
+
+Allowed origins and credentials are configured in `src/main.ts`; allowed headers include `x-xsrf-token`, `x-guest-token`, and `x-customer-id` so browsers can send admin CSRF and guest context correctly.
+
+---
+
+## Project organization
+
+```
+src/
+├── api/
+│   ├── admin/          # Back-office: auth, products, variants, attributes, categories,
+│   │                   # brands, taxes, shipping, media, gallery
+│   └── public/         # Storefront: products, media, cart, wishlist (+ guest middleware)
+├── common/             # Guards, filters, interceptors, decorators, DTO helpers
+├── config/             # Zod-validated env, app config service
+├── modules/            # Integrations (e.g. Cloudinary)
+├── prisma/             # Prisma module & service
+└── main.ts             # Helmet, cookies, body limit, global prefix api/v1, CORS, DB ping
+
+prisma/
+├── schema/             # Split schema files (product, order, cart, inventory, etc.)
+└── migrations/
 ```
 
-## Compile and run the project
+**Global stack wiring** (`src/app.module.ts`): `ThrottlerGuard`, `AdminSessionGuard`, `AdminCsrfGuard`, `ZodValidationPipe`, `TransformInterceptor`, `GlobalExceptionFilter`.
 
-```bash
-# development
-$ pnpm run start
+---
 
-# watch mode
-$ pnpm run start:dev
+## API surface (all under `api/v1`)
 
-# production mode
-$ pnpm run start:prod
+| Prefix | Purpose |
+|--------|---------|
+| `admin/auth` | Register, login, refresh, logout, me |
+| `admin/products`, `admin/product-variants`, `admin/product-attributes` | Catalog management |
+| `admin/categories`, `admin/brands` | Taxonomy |
+| `admin/taxes`, `admin/shipping-methods` | Pricing & fulfillment config |
+| `admin/media`, `admin/gallery` | Uploads & product gallery |
+| `public/products`, `public/media` | Storefront read/browse |
+| `public/cart`, `public/wishlist` | Guest/customer cart & wishlist |
+| *(root)* `GET /api/v1/health` | Liveness-style check |
+
+---
+
+## Tech stack
+
+- **NestJS 11**, **Prisma 7**, **PostgreSQL**
+- **Zod** + `nestjs-zod` for env and request validation
+- **JWT** (`jsonwebtoken`) + **cookies** for admin sessions
+- **Helmet**, **cookie-parser**, **@nestjs/throttler**
+- **Cloudinary** for media (env-driven folder, default `gym-backend/admin-media`)
+
+---
+
+## Architecture snapshot
+
+```mermaid
+flowchart TD
+  Client[ClientOrAdminPanel] --> Api[api/v1]
+  Api --> AdminApi[AdminModules]
+  Api --> PublicApi[PublicModules]
+  AdminApi --> SessionGuard[AdminSessionGuard]
+  AdminApi --> CsrfGuard[AdminCsrfGuard]
+  PublicApi --> GuestMiddleware[GuestTokenMiddleware]
+  AdminApi --> Prisma[Prisma]
+  PublicApi --> Prisma
+  AdminApi --> Cloudinary[CloudinaryMediaFlow]
 ```
 
-## Run tests
+---
+
+## Environment variables
+
+Create a `.env` (or use your host’s secret manager) with values validated by `src/config/env.schema.ts`:
+
+| Variable | Purpose |
+|----------|---------|
+| `NODE_ENV` | `development` \| `production` \| `test` \| `provision` |
+| `PORT` | HTTP port |
+| `DATABASE_URL` | PostgreSQL connection URL |
+| `ALLOWED_ORIGINS` | Comma-separated CORS origins (credentials enabled) |
+| `ADMIN_JWT_ACCESS_SECRET` | Min 16 chars — access token signing |
+| `ADMIN_JWT_REFRESH_SECRET` | Min 16 chars — refresh token signing |
+| `ADMIN_JWT_ACCESS_EXPIRES` | Default `15m` |
+| `ADMIN_JWT_REFRESH_EXPIRES` | Default `7d` |
+| `CLOUDINARY_CLOUD_NAME` | Media uploads |
+| `CLOUDINARY_API_KEY` | Media uploads |
+| `CLOUDINARY_API_SECRET` | Media uploads |
+| `CLOUDINARY_UPLOAD_FOLDER` | Default `gym-backend/admin-media` |
+
+---
+
+## How to run
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm install
+pnpm run prisma:generate
+pnpm run prisma:migrate   # or prisma:push for quick local iteration
+pnpm run start:dev
 ```
 
-## Deployment
+- API base URL: `http://localhost:<PORT>/api/v1`
+- Health: `GET http://localhost:<PORT>/api/v1/health`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Scripts (from `package.json`)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+| Script | Command |
+|--------|---------|
+| Build | `pnpm run build` |
+| Dev | `pnpm run start:dev` |
+| Prod | `pnpm run start:prod` |
+| Prisma | `pnpm run prisma:generate`, `prisma:migrate`, `prisma:studio`, `prisma:seed` |
+| Lint / format | `pnpm run lint`, `pnpm run format` |
+| Tests | `pnpm run test`, `pnpm run test:e2e`, `pnpm run test:cov` |
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+---
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Testing note
 
-## Resources
+E2E and unit test coverage is minimal today; improving tests is a natural next step for production hardening. The **design** above (auth, CSRF, guest cart, module split) is what this repo demonstrates for backend depth.
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+See repository / `package.json` (`UNLICENSED` if not specified otherwise).

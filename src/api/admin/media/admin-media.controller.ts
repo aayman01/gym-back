@@ -6,8 +6,8 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { sendResponse } from '../../../common/helpers/send.response';
-import { CurrentAdmin } from '../../../common/decorators/current-admin.decorator';
+import { sendResponse } from '@common/helpers/send.response';
+import { CurrentAdmin } from '@common/decorators/current-admin.decorator';
 import type { AdminSessionData } from '../auth/types/admin-session.types';
 import { AdminMediaService } from './admin-media.service';
 

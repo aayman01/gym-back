@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { paginatedSearchQuerySchema } from '../../../../common/dto/paginated-search-query.dto';
+import { paginatedSearchQuerySchema } from '@common/dto/paginated-search-query.dto';
 
 export const getTaxesQuerySchema = paginatedSearchQuerySchema.extend({
   isActive: z

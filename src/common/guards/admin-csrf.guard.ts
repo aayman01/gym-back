@@ -12,6 +12,10 @@ const PUBLIC_AUTH_PATH_FRAGMENTS = [
   'admin/auth/register',
   'admin/auth/refresh',
   'admin/auth/logout',
+  'user/auth/login',
+  'user/auth/register',
+  'user/auth/refresh',
+  'user/auth/logout',
 ] as const;
 
 @Injectable()

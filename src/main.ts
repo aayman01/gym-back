@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { ZodExceptionFilter } from './common/filters/zod-exception.filter';
+import { ZodExceptionFilter } from '@common/filters/zod-exception.filter';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { json } from 'express';

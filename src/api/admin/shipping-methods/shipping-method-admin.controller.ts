@@ -13,7 +13,7 @@ import { CreateShippingMethodDto } from './dto/create-shipping-method.dto';
 import { UpdateShippingMethodDto } from './dto/update-shipping-method.dto';
 import { GetShippingMethodsQueryDto } from './dto/get-shipping-methods-query.dto';
 import { ShippingMethodIdParamDto } from './dto/shipping-method-id-param.dto';
-import { sendResponse } from '../../../common/helpers/send.response';
+import { sendResponse } from '@common/helpers/send.response';
 
 @Controller('admin/shipping-methods')
 export class ShippingMethodAdminController {

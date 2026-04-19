@@ -1,14 +1,14 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { sendResponse } from '../../../common/helpers/send.response';
-import { Public } from '../../../common/decorators/public.decorator';
-import { GuestToken } from '../common/decorators/guest-token.decorator';
-import { CurrentCustomerId } from '../common/decorators/current-customer-id.decorator';
+import { sendResponse } from '@common/helpers/send.response';
+import { Public } from '@common/decorators/public.decorator';
+import { GuestToken } from '@common/decorators/guest-token.decorator';
+import { CurrentCustomerId } from '@common/decorators/current-customer-id.decorator';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { SyncCartDto } from './dto/sync-cart.dto';
 import { CartService } from './cart.service';
 
 @Public()
-@Controller('public/cart')
+@Controller('user/cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 

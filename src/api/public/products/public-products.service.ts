@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ItemStatus, Prisma, ProductType, SellingUnit } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import type { IPaginatedResponse } from '../../../common/types/pagination.types';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import type { IPaginatedResponse } from '@common/types/pagination.types';
 import { GetPublicProductsQueryDto } from './dto/public-products-query.dto';
 
 const listInclude = {

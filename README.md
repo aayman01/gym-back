@@ -28,9 +28,9 @@ This is intentionally more than a thin CRUD layer: validation, rate limiting, se
    - `admin_refresh_token` — HttpOnly JWT (longer-lived)
    - `XSRF-TOKEN` — **readable** cookie used with the header below
 
-2. **`AdminSessionGuard`** (global): non-`@Public()` routes require a valid `admin_access_token` cookie; payload is verified and the admin is loaded from the DB. See `src/common/guards/admin-session.guard.ts` and `src/api/admin/auth/admin-session.service.ts`.
+2. **`AdminSessionGuard`** (global): non-`@Public()` routes require a valid `admin_access_token` cookie; payload is verified and the admin is loaded from the DB. See [`src/common/guards/admin-session.guard.ts`](src/common/guards/admin-session.guard.ts) and `src/api/admin/auth/admin-session.service.ts`.
 
-3. **`AdminCsrfGuard`** (global): for `POST`/`PUT`/`PATCH`/`DELETE` (not `GET`/`HEAD`/`OPTIONS`), in **non-development** environments, the `XSRF-TOKEN` cookie must match the `x-xsrf-token` header. Auth endpoints like login/register/refresh/logout are excluded. See `src/common/guards/admin-csrf.guard.ts`.
+3. **`AdminCsrfGuard`** (global): for `POST`/`PUT`/`PATCH`/`DELETE` (not `GET`/`HEAD`/`OPTIONS`), in **non-development** environments, the `XSRF-TOKEN` cookie must match the `x-xsrf-token` header. Auth endpoints like login/register/refresh/logout are excluded. See [`src/common/guards/admin-csrf.guard.ts`](src/common/guards/admin-csrf.guard.ts).
 
 4. **Refresh / logout**: `POST /api/v1/admin/auth/refresh` (uses refresh cookie), `POST /api/v1/admin/auth/logout` clears cookies. Session validation for the current user: `GET /api/v1/admin/auth/me`.
 
@@ -38,9 +38,9 @@ Implementation detail: tokens are signed with `jsonwebtoken`; secrets and expiry
 
 ### Public (storefront)
 
-- Routes that must stay anonymous are marked **`@Public()`** so the admin session guard skips them (`src/common/decorators/public.decorator.ts`).
-- **Cart & wishlist** get a stable **`guestToken`** (header `x-guest-token` or cookie `guestToken`) via `GuestTokenMiddleware` wired in `src/api/public/public.module.ts`.
-- Optional **`x-customer-id`** is available for flows where the client identifies a logged-in customer (see `current-customer-id.decorator.ts`).
+- Routes that must stay anonymous are marked **`@Public()`** so the admin session guard skips them ([`src/common/decorators/public.decorator.ts`](src/common/decorators/public.decorator.ts)).
+- **Cart & wishlist** get a stable **`guestToken`** (header `x-guest-token` or cookie `guestToken`) via `GuestTokenMiddleware` wired in [`src/api/user/user.module.ts`](src/api/user/user.module.ts).
+- Optional **`x-customer-id`** is available for flows where the client identifies a logged-in customer (see [`src/common/decorators/current-customer-id.decorator.ts`](src/common/decorators/current-customer-id.decorator.ts)).
 
 ### CORS
 

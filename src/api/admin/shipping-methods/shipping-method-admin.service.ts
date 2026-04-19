@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import { IPaginatedResponse } from '../../../common/types/pagination.types';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import { IPaginatedResponse } from '@common/types/pagination.types';
 import {
   ShippingMethodRepository,
   ShippingMethodAdminRow,

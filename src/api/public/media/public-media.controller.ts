@@ -7,7 +7,7 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { Public } from '../../../common/decorators/public.decorator';
+import { Public } from '@common/decorators/public.decorator';
 import { PrismaService } from '../../../prisma/prisma.service';
 
 @Controller('public/media')

@@ -33,7 +33,6 @@ model Product {
   brandId           String?
   slug              String      @unique @db.VarChar(255)
   thumbnailId       String?
-  shippingMethodId  String?
   isFeature         Boolean     @default(false)
   rating            Decimal     @default(0.00) @db.Decimal(11, 2)
   lowStockThreshold Int         @default(0)
@@ -62,7 +61,6 @@ model Product {
   category            Category                   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   brand               Brand?                     @relation(fields: [brandId], references: [id], onDelete: SetNull)
   thumbnail           AdminMedia?                @relation("ProductThumbnail", fields: [thumbnailId], references: [id], onDelete: SetNull)
-  shippingMethod      ShippingMethod?            @relation(fields: [shippingMethodId], references: [id], onDelete: SetNull)
   tax                 Tax?                       @relation(fields: [taxId], references: [id], onDelete: SetNull)
   variants            ProductVariant[]
   /// Product-level and variant-level gallery images (canonical gallery table).

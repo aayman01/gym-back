@@ -3,9 +3,9 @@ import {
   ProductVariantRepository,
   ProductVariantAdminPayload,
 } from './product-variant.repository';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import { IPaginatedResponse } from '../../../common/types/pagination.types';
-import { PaginatedSearchQueryDto } from '../../../common/dto/paginated-search-query.dto';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import { IPaginatedResponse } from '@common/types/pagination.types';
+import { PaginatedSearchQueryDto } from '@common/dto/paginated-search-query.dto';
 
 export type ProductVariantAdminListItem = {
   id: string;

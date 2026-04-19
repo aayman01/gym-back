@@ -1,8 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ProductVariantAdminService } from './product-variant-admin.service';
-import { PaginatedSearchQueryDto } from '../../../common/dto/paginated-search-query.dto';
+import { PaginatedSearchQueryDto } from '@common/dto/paginated-search-query.dto';
 import { VariantIdParamDto } from './dto/variant-id-param.dto';
-import { sendResponse } from '../../../common/helpers/send.response';
+import { sendResponse } from '@common/helpers/send.response';
 
 @Controller('admin/product-variants')
 export class ProductVariantAdminController {

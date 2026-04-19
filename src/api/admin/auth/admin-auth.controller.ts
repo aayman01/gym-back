@@ -11,10 +11,10 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AppConfigService } from '../../../config/app_config/app_config.service';
-import { parseDuration } from '../../../common/helpers/duration.helper';
-import { sendResponse } from '../../../common/helpers/send.response';
-import { Public } from '../../../common/decorators/public.decorator';
-import { CurrentAdmin } from '../../../common/decorators/current-admin.decorator';
+import { parseDuration } from '@common/helpers/duration.helper';
+import { sendResponse } from '@common/helpers/send.response';
+import { Public } from '@common/decorators/public.decorator';
+import { CurrentAdmin } from '@common/decorators/current-admin.decorator';
 import { AdminAuthService } from './admin-auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';

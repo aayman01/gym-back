@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import { IPaginatedResponse } from '../../../common/types/pagination.types';
-import { PaginatedSearchQueryDto } from '../../../common/dto/paginated-search-query.dto';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import { IPaginatedResponse } from '@common/types/pagination.types';
+import { PaginatedSearchQueryDto } from '@common/dto/paginated-search-query.dto';
 import {
   ProductAttributeListPayload,
   ProductAttributeRepository,

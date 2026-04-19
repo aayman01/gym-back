@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import { IPaginatedResponse } from '../../../common/types/pagination.types';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import { IPaginatedResponse } from '@common/types/pagination.types';
 import { BrandAdminPayload, BrandRepository } from './brand.repository';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';

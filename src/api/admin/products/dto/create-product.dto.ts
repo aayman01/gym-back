@@ -47,7 +47,6 @@ export const createProductSchema = z
     metaTitle: z.string().max(255).optional().nullable(),
     metaKeywords: z.string().max(255).optional().nullable(),
     metaDescription: z.string().max(1000).optional().nullable(),
-    shippingMethodId: z.string().uuid().optional().nullable(),
     taxId: z.string().uuid().optional().nullable(),
     isTaxIncluded: z.boolean().optional().default(false),
     isFragile: z.boolean().optional().default(false),

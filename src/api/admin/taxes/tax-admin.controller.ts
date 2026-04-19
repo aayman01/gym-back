@@ -13,7 +13,7 @@ import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';
 import { GetTaxesQueryDto } from './dto/get-taxes-query.dto';
 import { TaxIdParamDto } from './dto/tax-id-param.dto';
-import { sendResponse } from '../../../common/helpers/send.response';
+import { sendResponse } from '@common/helpers/send.response';
 
 @Controller('admin/taxes')
 export class TaxAdminController {

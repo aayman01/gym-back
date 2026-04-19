@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { Prisma, TaxType } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import { IPaginatedResponse } from '../../../common/types/pagination.types';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import { IPaginatedResponse } from '@common/types/pagination.types';
 import { TaxRepository, TaxAdminRow } from './tax.repository';
 import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';

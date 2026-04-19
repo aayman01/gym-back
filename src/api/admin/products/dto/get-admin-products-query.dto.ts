@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { ItemStatus, ProductType, SellingUnit } from '@prisma/client';
 import { z } from 'zod';
-import { paginationQuerySchema } from '../../../../common/dto/pagination-query.dto';
+import { paginationQuerySchema } from '@common/dto/pagination-query.dto';
 
 export const getAdminProductsQuerySchema = paginationQuerySchema.extend({
   search: z.string().optional(),

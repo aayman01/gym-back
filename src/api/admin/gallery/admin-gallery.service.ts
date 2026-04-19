@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import type { IPaginatedResponse } from '../../../common/types/pagination.types';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import type { IPaginatedResponse } from '@common/types/pagination.types';
 import { GetGalleryQueryDto } from './dto/get-gallery-query.dto';
 import { AddToGalleryDto } from './dto/add-to-gallery.dto';
 import { SwapGalleryOrderDto } from './dto/swap-gallery-order.dto';

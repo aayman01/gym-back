@@ -1,14 +1,14 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { Public } from '../../../common/decorators/public.decorator';
-import { sendResponse } from '../../../common/helpers/send.response';
-import { CurrentCustomerId } from '../common/decorators/current-customer-id.decorator';
-import { GuestToken } from '../common/decorators/guest-token.decorator';
+import { Public } from '@common/decorators/public.decorator';
+import { sendResponse } from '@common/helpers/send.response';
+import { CurrentCustomerId } from '@common/decorators/current-customer-id.decorator';
+import { GuestToken } from '@common/decorators/guest-token.decorator';
 import { AddToWishlistDto } from './dto/add-to-wishlist.dto';
 import { SyncWishlistDto } from './dto/sync-wishlist.dto';
 import { WishlistService } from './wishlist.service';
 
 @Public()
-@Controller('public/wishlist')
+@Controller('user/wishlist')
 export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 

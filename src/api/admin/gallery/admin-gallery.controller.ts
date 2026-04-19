@@ -8,8 +8,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { sendResponse } from '../../../common/helpers/send.response';
-import { CurrentAdmin } from '../../../common/decorators/current-admin.decorator';
+import { sendResponse } from '@common/helpers/send.response';
+import { CurrentAdmin } from '@common/decorators/current-admin.decorator';
 import type { AdminSessionData } from '../auth/types/admin-session.types';
 import { AdminGalleryService } from './admin-gallery.service';
 import { GetGalleryQueryDto } from './dto/get-gallery-query.dto';

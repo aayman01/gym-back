@@ -10,8 +10,8 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { validate } from './config/env.schema';
 import configuration from './config/configuration';
 import { AppConfigModule } from './config/app_config/app_config.module';
-import { GlobalExceptionFilter } from './common/filters/global.exception.handler';
-import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { GlobalExceptionFilter } from '@common/filters/global.exception.handler';
+import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
 import { ProductVariantAdminModule } from './api/admin/product-variants/product-variant-admin.module';
 import { ProductAttributeAdminModule } from './api/admin/product-attributes/product-attribute-admin.module';
 import { CategoryAdminModule } from './api/admin/categories/category-admin.module';
@@ -19,12 +19,15 @@ import { BrandAdminModule } from './api/admin/brands/brand-admin.module';
 import { TaxAdminModule } from './api/admin/taxes/tax-admin.module';
 import { ShippingMethodAdminModule } from './api/admin/shipping-methods/shipping-method-admin.module';
 import { AdminAuthModule } from './api/admin/auth/admin-auth.module';
-import { AdminSessionGuard } from './common/guards/admin-session.guard';
-import { AdminCsrfGuard } from './common/guards/admin-csrf.guard';
+import { AdminSessionGuard } from '@common/guards/admin-session.guard';
+import { AdminCsrfGuard } from '@common/guards/admin-csrf.guard';
 import { AdminMediaModule } from './api/admin/media/admin-media.module';
 import { AdminGalleryModule } from './api/admin/gallery/admin-gallery.module';
 import { ProductsAdminModule } from './api/admin/products/products-admin.module';
 import { PublicModule } from './api/public/public.module';
+import { CommerceModule } from '@common/commerce/commerce.module';
+import { UserModule } from './api/user/user.module';
+import { AdminOrdersModule } from './api/admin/orders/admin-orders.module';
 
 @Module({
   imports: [
@@ -58,6 +61,9 @@ import { PublicModule } from './api/public/public.module';
     AdminGalleryModule,
     ProductsAdminModule,
     PublicModule,
+    UserModule,
+    CommerceModule,
+    AdminOrdersModule,
   ],
   controllers: [AppController],
   providers: [

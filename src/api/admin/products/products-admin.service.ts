@@ -11,8 +11,8 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { PaginationHelper } from '../../../common/helpers/pagination.helper';
-import type { IPaginatedResponse } from '../../../common/types/pagination.types';
+import { PaginationHelper } from '@common/helpers/pagination.helper';
+import type { IPaginatedResponse } from '@common/types/pagination.types';
 import { AdminMediaReserveService } from '../media/admin-media-reserve.service';
 import type { UpdateProductDto } from './dto/update-product.dto';
 import {
@@ -27,7 +27,6 @@ const productInclude = {
   category: true,
   secondaryCategories: { include: { category: true } },
   tax: true,
-  shippingMethod: true,
   sampleImages: {
     orderBy: [{ order: 'asc' as const }],
     include: { image: true },
@@ -245,7 +244,6 @@ export class ProductsAdminService {
           brandId: parsed.brandId ?? null,
           slug: parsed.slug,
           thumbnailId: parsed.thumbnailId ?? null,
-          shippingMethodId: parsed.shippingMethodId ?? null,
           isFeature: parsed.isFeature ?? false,
           lowStockThreshold: parsed.lowStockThreshold ?? 0,
           tags: parsed.tags ?? [],
@@ -457,10 +455,6 @@ export class ProductsAdminService {
           dto.metaDescription !== undefined
             ? dto.metaDescription
             : existing.metaDescription,
-        shippingMethodId:
-          dto.shippingMethodId !== undefined
-            ? dto.shippingMethodId
-            : existing.shippingMethodId,
         taxId: dto.taxId !== undefined ? dto.taxId : existing.taxId,
         isTaxIncluded: dto.isTaxIncluded ?? existing.isTaxIncluded,
         isFragile: dto.isFragile ?? existing.isFragile,
@@ -511,7 +505,6 @@ export class ProductsAdminService {
             brandId: merged.brandId,
             slug: merged.slug,
             thumbnailId: merged.thumbnailId,
-            shippingMethodId: merged.shippingMethodId,
             isFeature: merged.isFeature,
             lowStockThreshold: merged.lowStockThreshold,
             tags: merged.tags,
@@ -636,9 +629,6 @@ export class ProductsAdminService {
             : {}),
           ...(dto.metaDescription !== undefined
             ? { metaDescription: dto.metaDescription }
-            : {}),
-          ...(dto.shippingMethodId !== undefined
-            ? { shippingMethodId: dto.shippingMethodId }
             : {}),
           ...(dto.taxId !== undefined ? { taxId: dto.taxId } : {}),
           ...(dto.isTaxIncluded !== undefined

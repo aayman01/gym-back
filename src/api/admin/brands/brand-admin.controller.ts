@@ -13,7 +13,7 @@ import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { BrandIdParamDto } from './dto/brand-id-param.dto';
 import { BrandSwapDto } from './dto/brand-swap.dto';
-import { sendResponse } from '../../../common/helpers/send.response';
+import { sendResponse } from '@common/helpers/send.response';
 
 @Controller('admin/brands')
 export class BrandAdminController {

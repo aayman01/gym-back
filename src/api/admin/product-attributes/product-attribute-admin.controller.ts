@@ -9,12 +9,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { ProductAttributeAdminService } from './product-attribute-admin.service';
-import { PaginatedSearchQueryDto } from '../../../common/dto/paginated-search-query.dto';
+import { PaginatedSearchQueryDto } from '@common/dto/paginated-search-query.dto';
 import { CreateProductAttributeDto } from './dto/create-product-attribute.dto';
 import { UpdateProductAttributeDto } from './dto/update-product-attribute.dto';
 import { AttributeIdParamDto } from './dto/attribute-id-param.dto';
 import { AttributeSwapDto } from './dto/attribute-swap.dto';
-import { sendResponse } from '../../../common/helpers/send.response';
+import { sendResponse } from '@common/helpers/send.response';
 
 @Controller('admin/product-attributes')
 export class ProductAttributeAdminController {

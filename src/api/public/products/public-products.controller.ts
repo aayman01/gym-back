@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { Public } from '../../../common/decorators/public.decorator';
-import { sendResponse } from '../../../common/helpers/send.response';
+import { Public } from '@common/decorators/public.decorator';
+import { sendResponse } from '@common/helpers/send.response';
 import { PublicProductsService } from './public-products.service';
 import { GetPublicProductsQueryDto } from './dto/public-products-query.dto';
 import { SearchProductsQueryDto } from './dto/search-products-query.dto';

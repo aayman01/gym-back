@@ -9,12 +9,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { CategoryAdminService } from './category-admin.service';
-import { PaginatedSearchQueryDto } from '../../../common/dto/paginated-search-query.dto';
+import { PaginatedSearchQueryDto } from '@common/dto/paginated-search-query.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryIdParamDto } from './dto/category-id-param.dto';
 import { CategorySwapDto } from './dto/category-swap.dto';
-import { sendResponse } from '../../../common/helpers/send.response';
+import { sendResponse } from '@common/helpers/send.response';
 
 @Controller('admin/categories')
 export class CategoryAdminController {
@@ -65,10 +65,7 @@ export class CategoryAdminController {
     @Param() param: CategoryIdParamDto,
     @Body() body: UpdateCategoryDto,
   ) {
-    const data = await this.categoryAdminService.update(
-      param.categoryId,
-      body,
-    );
+    const data = await this.categoryAdminService.update(param.categoryId, body);
     return sendResponse({
       success: true,
       message: 'Category updated successfully',

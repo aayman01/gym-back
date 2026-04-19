@@ -7,7 +7,6 @@ model ShippingMethod {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  products           Product[]
   orderShippingInfos OrderShippingInfo[]
 
   @@index([isActive])

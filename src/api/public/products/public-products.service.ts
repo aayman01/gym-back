@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ItemStatus, Prisma } from '@prisma/client';
+import { ItemStatus, Prisma, ProductType, SellingUnit } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { PaginationHelper } from '../../../common/helpers/pagination.helper';
 import type { IPaginatedResponse } from '../../../common/types/pagination.types';
@@ -96,6 +96,27 @@ export type PublicProductDetail = {
   relatedProducts: PublicProductCard[];
 };
 
+export type PublicProductsAppliedFilters = {
+  page: number;
+  limit: number;
+  search?: string;
+  categoryId?: string;
+  categorySlug?: string;
+  brandId?: string;
+  minRating?: number;
+  type?: ProductType;
+  sellingUnit?: SellingUnit;
+  minBasePrice?: number;
+  maxBasePrice?: number;
+  minPrice?: number;
+  maxPrice?: number;
+};
+
+export type PublicProductsListPayload =
+  IPaginatedResponse<PublicProductCard> & {
+    filters: PublicProductsAppliedFilters;
+  };
+
 @Injectable()
 export class PublicProductsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -106,6 +127,7 @@ export class PublicProductsService {
     const {
       search,
       categoryId,
+      categorySlug,
       brandId,
       minRating,
       type,
@@ -121,7 +143,12 @@ export class PublicProductsService {
       { status: ItemStatus.ACTIVE },
     ];
 
-    if (categoryId) filters.push({ categoryId });
+    const categorySlugTrimmed = categorySlug?.trim();
+    if (categorySlugTrimmed) {
+      filters.push({ category: { slug: categorySlugTrimmed } });
+    } else if (categoryId) {
+      filters.push({ categoryId });
+    }
     if (brandId) filters.push({ brandId });
     if (type) filters.push({ type });
     if (sellingUnit) filters.push({ sellingUnit });
@@ -169,6 +196,49 @@ export class PublicProductsService {
     return { AND: filters };
   }
 
+  private buildAppliedFilters(
+    query: GetPublicProductsQueryDto,
+  ): PublicProductsAppliedFilters {
+    const {
+      page,
+      limit,
+      search,
+      categoryId,
+      categorySlug,
+      brandId,
+      minRating,
+      type,
+      sellingUnit,
+      minBasePrice,
+      maxBasePrice,
+      minPrice,
+      maxPrice,
+    } = query;
+
+    const out: PublicProductsAppliedFilters = { page, limit };
+
+    const trimmedSearch = search?.trim();
+    if (trimmedSearch) out.search = trimmedSearch;
+
+    const slugTrimmed = categorySlug?.trim();
+    if (slugTrimmed) {
+      out.categorySlug = slugTrimmed;
+    } else if (categoryId) {
+      out.categoryId = categoryId;
+    }
+
+    if (brandId) out.brandId = brandId;
+    if (minRating !== undefined) out.minRating = minRating;
+    if (type) out.type = type;
+    if (sellingUnit) out.sellingUnit = sellingUnit;
+    if (minBasePrice !== undefined) out.minBasePrice = minBasePrice;
+    if (maxBasePrice !== undefined) out.maxBasePrice = maxBasePrice;
+    if (minPrice !== undefined) out.minPrice = minPrice;
+    if (maxPrice !== undefined) out.maxPrice = maxPrice;
+
+    return out;
+  }
+
   private toCard(
     row: Prisma.ProductGetPayload<{ include: typeof listInclude }>,
   ): PublicProductCard {
@@ -203,7 +273,7 @@ export class PublicProductsService {
 
   async findAll(
     query: GetPublicProductsQueryDto,
-  ): Promise<IPaginatedResponse<PublicProductCard>> {
+  ): Promise<PublicProductsListPayload> {
     const { page, limit } = query;
     const offset = PaginationHelper.getOffset(page, limit);
     const where = this.buildListWhere(query);
@@ -220,7 +290,10 @@ export class PublicProductsService {
     ]);
 
     const data = rows.map((r) => this.toCard(r));
-    return PaginationHelper.formatResponse(data, total, page, limit);
+    return {
+      ...PaginationHelper.formatResponse(data, total, page, limit),
+      filters: this.buildAppliedFilters(query),
+    };
   }
 
   async search(

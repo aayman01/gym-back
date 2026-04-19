@@ -8,7 +8,10 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { PaginationHelper } from '../../../common/helpers/pagination.helper';
 import { IPaginatedResponse } from '../../../common/types/pagination.types';
 import { PaginatedSearchQueryDto } from '../../../common/dto/paginated-search-query.dto';
-import { CategoryAdminPayload, CategoryRepository } from './category.repository';
+import {
+  CategoryAdminPayload,
+  CategoryRepository,
+} from './category.repository';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategorySwapDto } from './dto/category-swap.dto';
@@ -40,8 +43,7 @@ export class CategoryAdminService {
     }
 
     return this.prisma.transaction(async (tx) => {
-      const nextOrder =
-        (await this.categoryRepository.findMaxOrder(tx)) + 1;
+      const nextOrder = (await this.categoryRepository.findMaxOrder(tx)) + 1;
 
       const order = payload.order ?? nextOrder;
 

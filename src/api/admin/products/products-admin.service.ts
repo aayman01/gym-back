@@ -28,6 +28,7 @@ const productInclude = {
   secondaryCategories: { include: { category: true } },
   tax: true,
   sampleImages: {
+    where: { variantId: null },
     orderBy: [{ order: 'asc' as const }],
     include: { image: true },
   },
@@ -131,11 +132,7 @@ export class ProductsAdminService {
 
     for (let index = 0; index < allVariants.length; index++) {
       const v = allVariants[index];
-      const isBase = dto.baseVariant
-        ? true
-        : isMulti
-          ? index === 0
-          : true;
+      const isBase = dto.baseVariant ? true : isMulti ? index === 0 : true;
 
       const variant = await tx.productVariant.create({
         data: {
@@ -225,7 +222,9 @@ export class ProductsAdminService {
         },
       });
       if (cats.length !== parsed.secondaryCategoryIds.length) {
-        throw new NotFoundException('One or more secondary categories not found');
+        throw new NotFoundException(
+          'One or more secondary categories not found',
+        );
       }
     }
 
@@ -444,7 +443,9 @@ export class ProductsAdminService {
         title: dto.title ?? existing.title,
         summary: dto.summary !== undefined ? dto.summary : existing.summary,
         description:
-          dto.description !== undefined ? dto.description : existing.description,
+          dto.description !== undefined
+            ? dto.description
+            : existing.description,
         metaTitle:
           dto.metaTitle !== undefined ? dto.metaTitle : existing.metaTitle,
         metaKeywords:
@@ -482,7 +483,9 @@ export class ProductsAdminService {
           where: { slug: dto.slug, deletedAt: null, NOT: { id: productId } },
         });
         if (slugTaken) {
-          throw new ConflictException('A product with this slug already exists');
+          throw new ConflictException(
+            'A product with this slug already exists',
+          );
         }
       }
 

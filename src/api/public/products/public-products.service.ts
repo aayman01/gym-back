@@ -9,6 +9,11 @@ const listInclude = {
   thumbnail: true,
   brand: true,
   category: true,
+  sampleImages: {
+    where: { variantId: null },
+    orderBy: { order: 'asc' as const },
+    include: { image: true },
+  },
   variants: {
     where: { status: ItemStatus.ACTIVE },
     select: {
@@ -28,6 +33,11 @@ export type PublicProductCard = {
   basePrice: string;
   rating: string;
   thumbnailUrl: string | null;
+  images: {
+    id: string;
+    order: number;
+    image: { id: string; url: string; mimeType: string };
+  }[];
   minPrice: string | null;
   maxPrice: string | null;
   brand: {
@@ -58,10 +68,9 @@ export type PublicProductDetail = {
     url: string;
     mimeType: string;
   } | null;
-  sampleImages: {
+  images: {
     id: string;
     order: number;
-    variantId: string | null;
     image: { id: string; url: string; mimeType: string };
   }[];
   brand: {
@@ -254,6 +263,11 @@ export class PublicProductsService {
       basePrice: row.basePrice.toString(),
       rating: row.rating.toString(),
       thumbnailUrl: row.thumbnail?.url ?? null,
+      images: row.sampleImages.map((s) => ({
+        id: s.id,
+        order: s.order,
+        image: { id: s.image.id, url: s.image.url, mimeType: s.image.mimeType },
+      })),
       minPrice,
       maxPrice,
       brand: row.brand
@@ -349,6 +363,7 @@ export class PublicProductsService {
         brand: { include: { logo: true } },
         category: true,
         sampleImages: {
+          where: { variantId: null },
           orderBy: { order: 'asc' },
           include: { image: true },
         },
@@ -444,10 +459,9 @@ export class PublicProductsService {
             mimeType: product.thumbnail.mimeType,
           }
         : null,
-      sampleImages: product.sampleImages.map((s) => ({
+      images: product.sampleImages.map((s) => ({
         id: s.id,
         order: s.order,
-        variantId: s.variantId,
         image: {
           id: s.image.id,
           url: s.image.url,

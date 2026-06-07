@@ -28,6 +28,7 @@ import { PublicModule } from './api/public/public.module';
 import { CommerceModule } from '@common/commerce/commerce.module';
 import { UserModule } from './api/user/user.module';
 import { AdminOrdersModule } from './api/admin/orders/admin-orders.module';
+import { AdminDashboardModule } from './api/admin/dashboard/admin-dashboard.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { AdminOrdersModule } from './api/admin/orders/admin-orders.module';
     UserModule,
     CommerceModule,
     AdminOrdersModule,
+    AdminDashboardModule,
   ],
   controllers: [AppController],
   providers: [

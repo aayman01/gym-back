@@ -25,6 +25,19 @@ const adminOrderInclude = {
   paymentMethod: { select: { id: true, code: true, name: true } },
 } satisfies Prisma.OrderInclude;
 
+const adminOrderDetailInclude = {
+  ...adminOrderInclude,
+  events: { orderBy: { occurredAt: 'desc' as const } },
+} satisfies Prisma.OrderInclude;
+
+type AdminOrderRow = Prisma.OrderGetPayload<{
+  include: typeof adminOrderInclude;
+}>;
+
+type AdminOrderDetailRow = Prisma.OrderGetPayload<{
+  include: typeof adminOrderDetailInclude;
+}>;
+
 @Injectable()
 export class AdminOrdersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -70,7 +83,7 @@ export class AdminOrdersService {
   async findOne(orderId: string) {
     const order = await this.prisma.order.findFirst({
       where: { id: orderId, deletedAt: null },
-      include: adminOrderInclude,
+      include: adminOrderDetailInclude,
     });
     if (!order) {
       throw new NotFoundException('Order not found');
@@ -101,15 +114,13 @@ export class AdminOrdersService {
           },
         },
       },
-      include: adminOrderInclude,
+      include: adminOrderDetailInclude,
     });
 
     return this.mapAdminOrder(order);
   }
 
-  private mapAdminOrder(
-    order: Prisma.OrderGetPayload<{ include: typeof adminOrderInclude }>,
-  ) {
+  private mapAdminOrder(order: AdminOrderRow | AdminOrderDetailRow) {
     const itemTotal = order.items.reduce(
       (sum, i) => sum.add(i.lineTotal),
       new Prisma.Decimal(0),
@@ -143,6 +154,17 @@ export class AdminOrdersService {
       billing: order.billingInfo,
       shipping: order.shippingInfo,
       paymentMethod: order.paymentMethod,
+      ...('events' in order && order.events
+        ? {
+            events: order.events.map((e) => ({
+              id: e.id,
+              eventType: e.eventType,
+              occurredAt: e.occurredAt,
+              actionBy: e.actionBy,
+              metadata: e.metadata,
+            })),
+          }
+        : {}),
     };
   }
 }

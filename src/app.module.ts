@@ -11,6 +11,7 @@ import { validate } from './config/env.schema';
 import configuration from './config/configuration';
 import { AppConfigModule } from './config/app_config/app_config.module';
 import { GlobalExceptionFilter } from '@common/filters/global.exception.handler';
+import { HttpLoggingInterceptor } from '@common/interceptors/http-logging.interceptor';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
 import { ProductVariantAdminModule } from './api/admin/product-variants/product-variant-admin.module';
 import { ProductAttributeAdminModule } from './api/admin/product-attributes/product-attribute-admin.module';
@@ -85,6 +86,10 @@ import { AdminDashboardModule } from './api/admin/dashboard/admin-dashboard.modu
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpLoggingInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,

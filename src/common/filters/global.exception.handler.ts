@@ -1,35 +1,37 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
-import { ZodError } from 'zod';
+import type { Request, Response } from 'express';
 import { ZodValidationException } from 'nestjs-zod';
+import { ZodError } from 'zod';
 import { sendResponse } from '../helpers/send.response';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost) {
+  private readonly logger = new Logger('ExceptionFilter');
+
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
+    const req = ctx.getRequest<Request>();
+    const path = req.originalUrl ?? req.url;
+    const method = req.method;
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
-    let error: any = null;
-
-    // 🟥 Handle HttpException
+    let error: unknown = null;
 
     if (exception instanceof ZodValidationException) {
-      console.log('Herrrre');
       status = HttpStatus.BAD_REQUEST;
       message = 'Validation failed';
 
-      const zodError = exception?.getZodError() as ZodError;
-
-      error = zodError?.issues || null;
+      const zodError = exception.getZodError() as ZodError;
+      error = zodError?.issues ?? null;
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const response = exception.getResponse();
@@ -37,21 +39,32 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if (typeof response === 'string') {
         message = response;
         error = null;
-      } else {
-        const r = response as any;
-        message = r.message || message;
+      } else if (typeof response === 'object' && response !== null) {
+        const r = response as { message?: string | string[] };
+        message = Array.isArray(r.message)
+          ? r.message.join(', ')
+          : (r.message ?? message);
         error = exception.stack;
       }
-    }
-
-    // 🟨 Handle generic errors
-    else {
-      message = exception?.message || message;
+    } else if (exception instanceof Error) {
+      message = exception.message;
+      error = exception.stack ?? exception;
+    } else {
       error = exception;
-      console.error('Unhandled Exception →', exception);
     }
 
-    console.log({ error });
+    const logMessage = `${method} ${path} ${status} - ${message}`;
+
+    if (status >= 500) {
+      this.logger.error(
+        logMessage,
+        exception instanceof Error ? exception.stack : undefined,
+      );
+    } else if (status >= 400) {
+      this.logger.warn(logMessage);
+    } else {
+      this.logger.log(logMessage);
+    }
 
     return res
       .status(status)

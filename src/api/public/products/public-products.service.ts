@@ -119,6 +119,7 @@ export type PublicProductsAppliedFilters = {
   maxBasePrice?: number;
   minPrice?: number;
   maxPrice?: number;
+  isFeature?: boolean;
 };
 
 export type PublicProductsListPayload =
@@ -145,6 +146,7 @@ export class PublicProductsService {
       maxBasePrice,
       minPrice,
       maxPrice,
+      isFeature,
     } = query;
 
     const filters: Prisma.ProductWhereInput[] = [
@@ -159,6 +161,7 @@ export class PublicProductsService {
       filters.push({ categoryId });
     }
     if (brandId) filters.push({ brandId });
+    if (isFeature !== undefined) filters.push({ isFeature });
     if (type) filters.push({ type });
     if (sellingUnit) filters.push({ sellingUnit });
     if (minRating !== undefined) {
@@ -222,6 +225,7 @@ export class PublicProductsService {
       maxBasePrice,
       minPrice,
       maxPrice,
+      isFeature,
     } = query;
 
     const out: PublicProductsAppliedFilters = { page, limit };
@@ -244,6 +248,7 @@ export class PublicProductsService {
     if (maxBasePrice !== undefined) out.maxBasePrice = maxBasePrice;
     if (minPrice !== undefined) out.minPrice = minPrice;
     if (maxPrice !== undefined) out.maxPrice = maxPrice;
+    if (isFeature !== undefined) out.isFeature = isFeature;
 
     return out;
   }

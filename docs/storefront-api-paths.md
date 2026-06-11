@@ -12,8 +12,31 @@ Shared Nest helpers, guards, storefront middleware, and commerce pricing live un
 |------|--------|
 | Products | `GET /public/products`, `GET /public/products/search`, `GET /public/products/:identifier` |
 | Categories | `GET /public/categories`, `GET /public/categories/:slug` |
+| Brands | `GET /public/brands` |
 | Reviews | `GET /public/products/:productId/reviews` |
 | Media (catalog redirect) | `GET /public/media/:mediaId/content` |
+
+### `GET /public/products` — query parameters
+
+| Param | Type | Notes |
+|-------|------|-------|
+| `page` | int | default 1 |
+| `limit` | int | default 10, max 100 |
+| `search` | string | Case-insensitive slug/title match |
+| `categoryId` | UUID | Ignored if `categorySlug` set |
+| `categorySlug` | string | Takes precedence over `categoryId` |
+| `brandId` | UUID | Ignored if `brandSlug` set |
+| `brandSlug` | string | Takes precedence over `brandId` |
+| `minRating` | 0–5 | `rating >= minRating` |
+| `type` | `PHYSICAL` \| `DIGITAL` \| `SERVICE` | |
+| `sellingUnit` | enum | PIECE, KG, GRAM, … |
+| `minBasePrice` | number | Product-level base price |
+| `maxBasePrice` | number | Product-level base price |
+| `minPrice` | number | Any active variant price |
+| `maxPrice` | number | Any active variant price |
+| `isFeature` | boolean | Featured products only |
+| `sortBy` | `updatedAt` \| `price` \| `rating` \| `title` | default `updatedAt` |
+| `sortOrder` | `asc` \| `desc` | default `desc` |
 
 ## User (customer session)
 

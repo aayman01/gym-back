@@ -3,7 +3,11 @@ import { ItemStatus, Prisma, ProductType, SellingUnit } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { PaginationHelper } from '@common/helpers/pagination.helper';
 import type { IPaginatedResponse } from '@common/types/pagination.types';
-import { GetPublicProductsQueryDto } from './dto/public-products-query.dto';
+import {
+  GetPublicProductsQueryDto,
+  type SortBy,
+  type SortOrder,
+} from './dto/public-products-query.dto';
 
 const listInclude = {
   thumbnail: true,
@@ -112,6 +116,7 @@ export type PublicProductsAppliedFilters = {
   categoryId?: string;
   categorySlug?: string;
   brandId?: string;
+  brandSlug?: string;
   minRating?: number;
   type?: ProductType;
   sellingUnit?: SellingUnit;
@@ -120,6 +125,8 @@ export type PublicProductsAppliedFilters = {
   minPrice?: number;
   maxPrice?: number;
   isFeature?: boolean;
+  sortBy?: SortBy;
+  sortOrder?: SortOrder;
 };
 
 export type PublicProductsListPayload =
@@ -139,6 +146,7 @@ export class PublicProductsService {
       categoryId,
       categorySlug,
       brandId,
+      brandSlug,
       minRating,
       type,
       sellingUnit,
@@ -160,7 +168,12 @@ export class PublicProductsService {
     } else if (categoryId) {
       filters.push({ categoryId });
     }
-    if (brandId) filters.push({ brandId });
+    const brandSlugTrimmed = brandSlug?.trim();
+    if (brandSlugTrimmed) {
+      filters.push({ brand: { slug: brandSlugTrimmed } });
+    } else if (brandId) {
+      filters.push({ brandId });
+    }
     if (isFeature !== undefined) filters.push({ isFeature });
     if (type) filters.push({ type });
     if (sellingUnit) filters.push({ sellingUnit });
@@ -218,6 +231,7 @@ export class PublicProductsService {
       categoryId,
       categorySlug,
       brandId,
+      brandSlug,
       minRating,
       type,
       sellingUnit,
@@ -226,6 +240,8 @@ export class PublicProductsService {
       minPrice,
       maxPrice,
       isFeature,
+      sortBy,
+      sortOrder,
     } = query;
 
     const out: PublicProductsAppliedFilters = { page, limit };
@@ -233,14 +249,20 @@ export class PublicProductsService {
     const trimmedSearch = search?.trim();
     if (trimmedSearch) out.search = trimmedSearch;
 
-    const slugTrimmed = categorySlug?.trim();
-    if (slugTrimmed) {
-      out.categorySlug = slugTrimmed;
+    const categorySlugTrimmed = categorySlug?.trim();
+    if (categorySlugTrimmed) {
+      out.categorySlug = categorySlugTrimmed;
     } else if (categoryId) {
       out.categoryId = categoryId;
     }
 
-    if (brandId) out.brandId = brandId;
+    const brandSlugTrimmed = brandSlug?.trim();
+    if (brandSlugTrimmed) {
+      out.brandSlug = brandSlugTrimmed;
+    } else if (brandId) {
+      out.brandId = brandId;
+    }
+
     if (minRating !== undefined) out.minRating = minRating;
     if (type) out.type = type;
     if (sellingUnit) out.sellingUnit = sellingUnit;
@@ -249,6 +271,8 @@ export class PublicProductsService {
     if (minPrice !== undefined) out.minPrice = minPrice;
     if (maxPrice !== undefined) out.maxPrice = maxPrice;
     if (isFeature !== undefined) out.isFeature = isFeature;
+    if (sortBy) out.sortBy = sortBy;
+    if (sortOrder) out.sortOrder = sortOrder;
 
     return out;
   }
@@ -290,12 +314,30 @@ export class PublicProductsService {
     };
   }
 
+  private buildOrderBy(
+    sortBy?: SortBy,
+    sortOrder?: SortOrder,
+  ): Prisma.ProductOrderByWithRelationInput {
+    const dir = sortOrder ?? 'desc';
+    switch (sortBy) {
+      case 'price':
+        return { basePrice: dir };
+      case 'rating':
+        return { rating: dir };
+      case 'title':
+        return { title: dir };
+      default:
+        return { updatedAt: dir };
+    }
+  }
+
   async findAll(
     query: GetPublicProductsQueryDto,
   ): Promise<PublicProductsListPayload> {
-    const { page, limit } = query;
+    const { page, limit, sortBy, sortOrder } = query;
     const offset = PaginationHelper.getOffset(page, limit);
     const where = this.buildListWhere(query);
+    const orderBy = this.buildOrderBy(sortBy, sortOrder);
 
     const [total, rows] = await Promise.all([
       this.prisma.product.count({ where }),
@@ -303,7 +345,7 @@ export class PublicProductsService {
         where,
         skip: offset,
         take: limit,
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
         include: listInclude,
       }),
     ]);

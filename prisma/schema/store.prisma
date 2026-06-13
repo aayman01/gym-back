@@ -4,8 +4,17 @@ model StoreConfig {
   description            String?               @db.Text
   currency               String                @default("USD") @db.VarChar(3)
   logoId                 String?
+  headerLogoId           String?
+  footerLogoId           String?
+  emailLogoId            String?
   faviconId              String?
+  siteUrl                String?               @db.VarChar(500)
+  metaTitle              String?               @db.VarChar(255)
+  metaDescription        String?               @db.Text
+  metaKeywords           String?               @db.Text
+  copyrightText          String?               @db.VarChar(500)
   primaryColor           String?               @db.VarChar(20)
+  primaryHoverColor      String?               @db.VarChar(20)
   secondaryColor         String?               @db.VarChar(20)
   fontColor              String?               @db.VarChar(20)
   bannerLayoutType       EcommerceBannerLayout @default(FULL_WIDTH_SLIDER)
@@ -15,8 +24,11 @@ model StoreConfig {
   updatedAt              DateTime              @updatedAt
   deletedAt              DateTime?
 
-  logo    AdminMedia? @relation("StoreConfigLogo", fields: [logoId], references: [id], onDelete: SetNull)
-  favicon AdminMedia? @relation("StoreConfigFavicon", fields: [faviconId], references: [id], onDelete: SetNull)
+  logo       AdminMedia? @relation("StoreConfigLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  headerLogo AdminMedia? @relation("StoreConfigHeaderLogo", fields: [headerLogoId], references: [id], onDelete: SetNull)
+  footerLogo AdminMedia? @relation("StoreConfigFooterLogo", fields: [footerLogoId], references: [id], onDelete: SetNull)
+  emailLogo  AdminMedia? @relation("StoreConfigEmailLogo", fields: [emailLogoId], references: [id], onDelete: SetNull)
+  favicon    AdminMedia? @relation("StoreConfigFavicon", fields: [faviconId], references: [id], onDelete: SetNull)
 
   @@index([deletedAt])
   @@map("store_config")

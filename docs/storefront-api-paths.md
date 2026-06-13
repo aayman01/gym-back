@@ -13,6 +13,7 @@ Shared Nest helpers, guards, storefront middleware, and commerce pricing live un
 | Products | `GET /public/products`, `GET /public/products/search`, `GET /public/products/:identifier` |
 | Categories | `GET /public/categories`, `GET /public/categories/:slug` |
 | Brands | `GET /public/brands` |
+| Site settings | `GET /public/site-settings` |
 | Reviews | `GET /public/products/:productId/reviews` |
 | Media (catalog redirect) | `GET /public/media/:mediaId/content` |
 

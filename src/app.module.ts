@@ -30,6 +30,7 @@ import { CommerceModule } from '@common/commerce/commerce.module';
 import { UserModule } from './api/user/user.module';
 import { AdminOrdersModule } from './api/admin/orders/admin-orders.module';
 import { AdminDashboardModule } from './api/admin/dashboard/admin-dashboard.module';
+import { SiteSettingsAdminModule } from './api/admin/site-settings/site-settings-admin.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { AdminDashboardModule } from './api/admin/dashboard/admin-dashboard.modu
     CommerceModule,
     AdminOrdersModule,
     AdminDashboardModule,
+    SiteSettingsAdminModule,
   ],
   controllers: [AppController],
   providers: [

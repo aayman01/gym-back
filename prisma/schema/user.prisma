@@ -24,6 +24,9 @@ model AdminMedia {
   categoryImages            Category[]
   brandLogos                Brand[]
   storeConfigLogos          StoreConfig[]        @relation("StoreConfigLogo")
+  storeConfigHeaderLogos    StoreConfig[]        @relation("StoreConfigHeaderLogo")
+  storeConfigFooterLogos    StoreConfig[]        @relation("StoreConfigFooterLogo")
+  storeConfigEmailLogos     StoreConfig[]        @relation("StoreConfigEmailLogo")
   storeConfigFavicons       StoreConfig[]        @relation("StoreConfigFavicon")
   banners                   Banner[]
   bannerSliderImages        BannerSliderImage[]

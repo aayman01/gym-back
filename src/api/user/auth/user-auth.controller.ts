@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   Req,
   Res,
@@ -19,6 +20,7 @@ import { CurrentCustomer } from '@common/decorators/current-customer.decorator';
 import { UserAuthService } from './user-auth.service';
 import { PublicRegisterDto } from './dto/register.dto';
 import { PublicLoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { CustomerSessionData } from './types/customer-session.types';
 import { CustomerAuthGuard } from '@common/guards/customer-auth.guard';
 
@@ -166,6 +168,22 @@ export class UserAuthController {
       success: true,
       message: 'Session valid',
       data: customer,
+    });
+  }
+
+  @Public()
+  @UseGuards(CustomerAuthGuard)
+  @Patch('me')
+  @HttpCode(HttpStatus.OK)
+  async updateMe(
+    @CurrentCustomer() customer: CustomerSessionData,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    const data = await this.userAuthService.updateProfile(customer.id, dto);
+    return sendResponse({
+      success: true,
+      message: 'Profile updated',
+      data,
     });
   }
 }

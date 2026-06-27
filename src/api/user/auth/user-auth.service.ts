@@ -106,6 +106,25 @@ export class UserAuthService {
     return this.sessionService.logout(accessToken);
   }
 
+  async updateProfile(
+    customerId: string,
+    dto: { firstName?: string; lastName?: string; phone?: string | null },
+  ) {
+    const updated = await this.customerRepository.update(customerId, {
+      ...(dto.firstName !== undefined && { firstName: dto.firstName }),
+      ...(dto.lastName !== undefined && { lastName: dto.lastName }),
+      ...(dto.phone !== undefined && { phone: dto.phone }),
+    });
+
+    return {
+      id: updated.id,
+      email: updated.email,
+      firstName: updated.firstName,
+      lastName: updated.lastName,
+      phone: updated.phone ?? null,
+    };
+  }
+
   generateCsrfToken(): string {
     return this.sessionService.generateCsrfToken();
   }

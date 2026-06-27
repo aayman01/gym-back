@@ -5,6 +5,7 @@ import { CartModule } from './cart/cart.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { OrdersModule } from './orders/orders.module';
+import { AddressesModule } from './addresses/addresses.module';
 import { CartController } from './cart/cart.controller';
 import { WishlistController } from './wishlist/wishlist.controller';
 
@@ -15,6 +16,7 @@ import { WishlistController } from './wishlist/wishlist.controller';
     WishlistModule,
     CheckoutModule,
     OrdersModule,
+    AddressesModule,
   ],
 })
 export class UserModule implements NestModule {

@@ -15,6 +15,7 @@ import { UpdateProductAttributeDto } from './dto/update-product-attribute.dto';
 import { AttributeIdParamDto } from './dto/attribute-id-param.dto';
 import { AttributeSwapDto } from './dto/attribute-swap.dto';
 import { sendResponse } from '@common/helpers/send.response';
+import { AttributeOptionParamDto } from './dto/attribute-option-param.dto';
 
 @Controller('admin/product-attributes')
 export class ProductAttributeAdminController {
@@ -104,6 +105,19 @@ export class ProductAttributeAdminController {
     return sendResponse({
       success: true,
       message: 'Attribute deleted successfully',
+      data,
+    });
+  }
+
+  @Delete(':attributeId/options/:optionId')
+  async deleteOption(@Param() param: AttributeOptionParamDto) {
+    const data = await this.productAttributeAdminService.deleteOption(
+      param.attributeId,
+      param.optionId,
+    );
+    return sendResponse({
+      success: true,
+      message: 'Option deleted successfully',
       data,
     });
   }

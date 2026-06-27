@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { sendResponse } from '@common/helpers/send.response';
 import { AdminOrdersService } from './admin-orders.service';
 import { GetAdminOrdersQueryDto } from './dto/get-admin-orders-query.dto';
 import { AdminOrderIdParamDto } from './dto/admin-order-id-param.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { AddOrderNoteDto } from './dto/add-order-note.dto';
 
 @Controller('admin/orders')
 export class AdminOrdersController {
@@ -40,10 +41,25 @@ export class AdminOrdersController {
     const data = await this.adminOrdersService.updateStatus(
       param.orderId,
       body.status,
+      body.note,
     );
     return sendResponse({
       success: true,
       message: 'Order status updated',
+      data,
+    });
+  }
+
+  @Post(':orderId/notes')
+  @HttpCode(HttpStatus.CREATED)
+  async addNote(
+    @Param() param: AdminOrderIdParamDto,
+    @Body() body: AddOrderNoteDto,
+  ) {
+    const data = await this.adminOrdersService.addNote(param.orderId, body.note);
+    return sendResponse({
+      success: true,
+      message: 'Note added',
       data,
     });
   }

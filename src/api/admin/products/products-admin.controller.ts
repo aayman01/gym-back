@@ -81,4 +81,14 @@ export class ProductsAdminController {
       data,
     });
   }
+
+  @Patch(':productId/restore')
+  async restore(@Param() params: ProductIdParamDto) {
+    const data = await this.productsAdminService.restore(params.productId);
+    return sendResponse({
+      success: true,
+      message: 'Product restored successfully',
+      data,
+    });
+  }
 }

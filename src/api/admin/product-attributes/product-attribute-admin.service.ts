@@ -159,6 +159,15 @@ export class ProductAttributeAdminService {
     return { id: attributeId };
   }
 
+  async deleteOption(attributeId: string, optionId: string) {
+    const option = await this.productAttributeRepository.findOptionById(optionId);
+    if (!option || option.attributeId !== attributeId) {
+      throw new NotFoundException('Option not found');
+    }
+    await this.productAttributeRepository.deleteOption(optionId);
+    return { id: optionId };
+  }
+
   async swapAttributes(dto: AttributeSwapDto) {
     return this.prisma.transaction(async (tx) => {
       const [a, b] = await Promise.all([

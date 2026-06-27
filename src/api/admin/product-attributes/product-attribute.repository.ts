@@ -146,6 +146,17 @@ export class ProductAttributeRepository {
     return this.client(tx).productAttribute.delete({ where: { id } });
   }
 
+  async deleteOption(optionId: string, tx?: Prisma.TransactionClient) {
+    return this.client(tx).productAttributeOption.delete({ where: { id: optionId } });
+  }
+
+  async findOptionById(optionId: string, tx?: Prisma.TransactionClient) {
+    return this.client(tx).productAttributeOption.findUnique({
+      where: { id: optionId },
+      select: { id: true, attributeId: true },
+    });
+  }
+
   async swapAttributeOrder(
     a: { id: string; order: number },
     b: { id: string; order: number },

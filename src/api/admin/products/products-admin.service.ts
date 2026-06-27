@@ -309,10 +309,18 @@ export class ProductsAdminService {
       maxBasePrice,
       minPrice,
       maxPrice,
+      includeArchived,
+      archivedOnly,
     } = query;
     const offset = PaginationHelper.getOffset(page, limit);
 
-    const filters: Prisma.ProductWhereInput[] = [{ deletedAt: null }];
+    const filters: Prisma.ProductWhereInput[] = [];
+
+    if (archivedOnly) {
+      filters.push({ deletedAt: { not: null } });
+    } else if (!includeArchived) {
+      filters.push({ deletedAt: null });
+    }
 
     if (categoryId) filters.push({ categoryId });
     if (brandId) filters.push({ brandId });
@@ -678,5 +686,19 @@ export class ProductsAdminService {
       data: { deletedAt: new Date(), status: ItemStatus.INACTIVE },
     });
     return { deleted: true };
+  }
+
+  async restore(productId: string) {
+    const existing = await this.prisma.product.findFirst({
+      where: { id: productId, deletedAt: { not: null } },
+    });
+    if (!existing) {
+      throw new NotFoundException('Archived product not found');
+    }
+    await this.prisma.product.update({
+      where: { id: productId },
+      data: { deletedAt: null, status: ItemStatus.INACTIVE },
+    });
+    return { restored: true };
   }
 }

@@ -15,6 +15,8 @@ export const getAdminProductsQuerySchema = paginationQuerySchema.extend({
   maxBasePrice: z.coerce.number().min(0).optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
+  includeArchived: z.coerce.boolean().optional(),
+  archivedOnly: z.coerce.boolean().optional(),
 });
 
 export class GetAdminProductsQueryDto extends createZodDto(

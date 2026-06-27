@@ -31,6 +31,7 @@ import { UserModule } from './api/user/user.module';
 import { AdminOrdersModule } from './api/admin/orders/admin-orders.module';
 import { AdminDashboardModule } from './api/admin/dashboard/admin-dashboard.module';
 import { SiteSettingsAdminModule } from './api/admin/site-settings/site-settings-admin.module';
+import { AdminInventoryModule } from './api/admin/inventory/admin-inventory.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { SiteSettingsAdminModule } from './api/admin/site-settings/site-settings
     AdminOrdersModule,
     AdminDashboardModule,
     SiteSettingsAdminModule,
+    AdminInventoryModule,
   ],
   controllers: [AppController],
   providers: [

@@ -91,7 +91,47 @@ export class AdminOrdersService {
     return this.mapAdminOrder(order);
   }
 
-  async updateStatus(orderId: string, status: OrderStatus) {
+  async updateStatus(orderId: string, status: OrderStatus, note?: string | null) {
+    const existing = await this.prisma.order.findFirst({
+      where: { id: orderId, deletedAt: null },
+    });
+    if (!existing) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const eventsToCreate: Prisma.OrderEventCreateWithoutOrderInput[] = [
+      {
+        eventType: OrderEventType.STATUS_CHANGED,
+        actionBy: OrderEventActionBy.ADMIN,
+        metadata: {
+          previousStatus: existing.status,
+          newStatus: status,
+          ...(note ? { note } : {}),
+        } as Prisma.JsonObject,
+      },
+    ];
+
+    if (note) {
+      eventsToCreate.push({
+        eventType: OrderEventType.NOTE_ADDED,
+        actionBy: OrderEventActionBy.ADMIN,
+        metadata: { note } as Prisma.JsonObject,
+      });
+    }
+
+    const order = await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status,
+        events: { create: eventsToCreate },
+      },
+      include: adminOrderDetailInclude,
+    });
+
+    return this.mapAdminOrder(order);
+  }
+
+  async addNote(orderId: string, note: string) {
     const existing = await this.prisma.order.findFirst({
       where: { id: orderId, deletedAt: null },
     });
@@ -102,15 +142,11 @@ export class AdminOrdersService {
     const order = await this.prisma.order.update({
       where: { id: orderId },
       data: {
-        status,
         events: {
           create: {
-            eventType: OrderEventType.STATUS_CHANGED,
+            eventType: OrderEventType.NOTE_ADDED,
             actionBy: OrderEventActionBy.ADMIN,
-            metadata: {
-              previousStatus: existing.status,
-              newStatus: status,
-            } as Prisma.JsonObject,
+            metadata: { note } as Prisma.JsonObject,
           },
         },
       },

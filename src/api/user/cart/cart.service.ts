@@ -6,8 +6,37 @@ import {
 import { ItemStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
+import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 
 type Actor = { customerId?: string; guestToken?: string };
+
+export type CartItemResponse = {
+  id: string;
+  quantity: number;
+  isSelected: boolean;
+  productId: string;
+  variantId: string | null;
+  product: {
+    id: string;
+    title: string;
+    slug: string;
+    thumbnailUrl: string | null;
+  };
+  variant: {
+    id: string;
+    sku: string;
+    price: string;
+    availableStock: number;
+  } | null;
+};
+
+export type CartResponse = {
+  id: string;
+  items: CartItemResponse[];
+  itemCount: number;
+  selectedCount: number;
+  selectedTotal: string;
+};
 
 @Injectable()
 export class CartService {
@@ -110,6 +139,141 @@ export class CartService {
     });
   }
 
+  private async findCart(tx: Prisma.TransactionClient, actor: Actor) {
+    this.assertActor(actor);
+    return tx.cart.findFirst({
+      where: actor.customerId
+        ? { customerId: actor.customerId }
+        : { customerToken: actor.guestToken },
+    });
+  }
+
+  private mapCartItem(
+    item: {
+      id: string;
+      quantity: number;
+      isSelected: boolean;
+      productId: string;
+      variantId: string | null;
+      product: {
+        id: string;
+        title: string;
+        slug: string;
+        thumbnail: { url: string } | null;
+      };
+      variant: {
+        id: string;
+        sku: string;
+        price: Prisma.Decimal;
+        quantity: number;
+        inventory: { quantityOnHand: number; quantityReserved: number } | null;
+      } | null;
+    },
+  ): CartItemResponse {
+    let availableStock = 0;
+    if (item.variant) {
+      const inv = item.variant.inventory;
+      availableStock = inv
+        ? Math.max(0, inv.quantityOnHand - inv.quantityReserved)
+        : Math.max(0, item.variant.quantity);
+    }
+
+    return {
+      id: item.id,
+      quantity: item.quantity,
+      isSelected: item.isSelected,
+      productId: item.productId,
+      variantId: item.variantId,
+      product: {
+        id: item.product.id,
+        title: item.product.title,
+        slug: item.product.slug,
+        thumbnailUrl: item.product.thumbnail?.url ?? null,
+      },
+      variant: item.variant
+        ? {
+            id: item.variant.id,
+            sku: item.variant.sku,
+            price: item.variant.price.toString(),
+            availableStock,
+          }
+        : null,
+    };
+  }
+
+  private computeCartTotals(items: CartItemResponse[]) {
+    const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+    const selectedCount = items
+      .filter((i) => i.isSelected)
+      .reduce((s, i) => s + i.quantity, 0);
+    const selectedTotal = items
+      .filter((i) => i.isSelected)
+      .reduce((s, i) => {
+        const price = parseFloat(i.variant?.price ?? '0');
+        return s + price * i.quantity;
+      }, 0)
+      .toFixed(2);
+
+    return { itemCount, selectedCount, selectedTotal };
+  }
+
+  async getCart(actor: Actor): Promise<CartResponse> {
+    this.assertActor(actor);
+
+    const cart = await this.prisma.cart.findFirst({
+      where: actor.customerId
+        ? { customerId: actor.customerId }
+        : { customerToken: actor.guestToken },
+      include: {
+        items: {
+          orderBy: { createdAt: 'asc' },
+          include: {
+            product: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                status: true,
+                deletedAt: true,
+                thumbnail: { select: { url: true } },
+              },
+            },
+            variant: {
+              select: {
+                id: true,
+                sku: true,
+                price: true,
+                quantity: true,
+                status: true,
+                inventory: {
+                  select: { quantityOnHand: true, quantityReserved: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!cart) {
+      return { id: '', items: [], itemCount: 0, selectedCount: 0, selectedTotal: '0.00' };
+    }
+
+    const items = cart.items
+      .filter(
+        (i) =>
+          i.product.status === ItemStatus.ACTIVE &&
+          i.product.deletedAt === null &&
+          (i.variant === null || i.variant.status === ItemStatus.ACTIVE),
+      )
+      .map((i) => this.mapCartItem(i));
+
+    const { itemCount, selectedCount, selectedTotal } =
+      this.computeCartTotals(items);
+
+    return { id: cart.id, items, itemCount, selectedCount, selectedTotal };
+  }
+
   async addToCart(payload: AddToCartDto, actor: Actor) {
     this.assertActor(actor);
 
@@ -171,7 +335,107 @@ export class CartService {
     });
   }
 
-  async syncCart(customerId: string, guestToken?: string) {
+  async updateCartItem(
+    itemId: string,
+    payload: UpdateCartItemDto,
+    actor: Actor,
+  ) {
+    this.assertActor(actor);
+
+    return this.prisma.transaction(async (tx) => {
+      const cart = await this.findCart(tx, actor);
+      if (!cart) {
+        throw new NotFoundException('Cart not found');
+      }
+
+      const item = await tx.cartItem.findFirst({
+        where: { id: itemId, cartId: cart.id },
+        include: {
+          variant: {
+            select: {
+              id: true,
+              quantity: true,
+              inventory: {
+                select: { quantityOnHand: true, quantityReserved: true },
+              },
+            },
+          },
+        },
+      });
+
+      if (!item) {
+        throw new NotFoundException('Cart item not found');
+      }
+
+      const updateData: Prisma.CartItemUpdateInput = {};
+
+      if (payload.quantity !== undefined) {
+        if (item.variant) {
+          const available = this.getAvailableStock(item.variant);
+          if (payload.quantity > available) {
+            throw new BadRequestException(
+              `Insufficient stock. Available: ${available}`,
+            );
+          }
+        }
+        updateData.quantity = payload.quantity;
+      }
+
+      if (payload.isSelected !== undefined) {
+        updateData.isSelected = payload.isSelected;
+      }
+
+      return tx.cartItem.update({
+        where: { id: itemId },
+        data: updateData,
+        include: {
+          product: { select: { id: true, title: true, slug: true } },
+          variant: { select: { id: true, sku: true, price: true } },
+        },
+      });
+    });
+  }
+
+  async removeCartItem(itemId: string, actor: Actor) {
+    this.assertActor(actor);
+
+    return this.prisma.transaction(async (tx) => {
+      const cart = await this.findCart(tx, actor);
+      if (!cart) {
+        throw new NotFoundException('Cart not found');
+      }
+
+      const item = await tx.cartItem.findFirst({
+        where: { id: itemId, cartId: cart.id },
+      });
+
+      if (!item) {
+        throw new NotFoundException('Cart item not found');
+      }
+
+      await tx.cartItem.delete({ where: { id: itemId } });
+      return { removed: true };
+    });
+  }
+
+  async clearCart(actor: Actor) {
+    this.assertActor(actor);
+
+    const cart = await this.prisma.cart.findFirst({
+      where: actor.customerId
+        ? { customerId: actor.customerId }
+        : { customerToken: actor.guestToken },
+    });
+
+    if (!cart) {
+      return { cleared: true };
+    }
+
+    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    return { cleared: true };
+  }
+
+  async mergeCart(customerId: string, guestToken?: string) {
     if (!guestToken) {
       return { synced: false, reason: 'Guest token missing' };
     }
@@ -239,5 +503,10 @@ export class CartService {
       await tx.cart.delete({ where: { id: guestCart.id } });
       return { synced: true, mergedItems };
     });
+  }
+
+  // kept for backward-compat; use mergeCart for new code
+  async syncCart(customerId: string, guestToken?: string) {
+    return this.mergeCart(customerId, guestToken);
   }
 }

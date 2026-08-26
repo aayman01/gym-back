@@ -21,6 +21,7 @@ import { UserAuthService } from './user-auth.service';
 import { PublicRegisterDto } from './dto/register.dto';
 import { PublicLoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import type { CustomerSessionData } from './types/customer-session.types';
 import { CustomerAuthGuard } from '@common/guards/customer-auth.guard';
 
@@ -184,6 +185,22 @@ export class UserAuthController {
       success: true,
       message: 'Profile updated',
       data,
+    });
+  }
+
+  @Public()
+  @UseGuards(CustomerAuthGuard)
+  @Patch('password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(
+    @CurrentCustomer() customer: CustomerSessionData,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    await this.userAuthService.changePassword(customer.id, dto);
+    return sendResponse({
+      success: true,
+      message: 'Password updated',
+      data: null,
     });
   }
 }

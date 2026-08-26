@@ -6,7 +6,9 @@ import type { IPaginatedResponse } from '@common/types/pagination.types';
 import { GetOrdersQueryDto } from './dto/get-orders-query.dto';
 
 const orderPublicInclude = {
-  items: true,
+  items: {
+    include: { review: { select: { id: true } } },
+  },
   billingInfo: true,
   shippingInfo: { include: { shippingMethod: true } },
   paymentMethod: { select: { id: true, code: true, name: true } },
@@ -83,6 +85,7 @@ export class OrdersService {
         quantity: i.quantity,
         unitPrice: i.price.toString(),
         lineTotal: i.lineTotal.toString(),
+        reviewId: i.review?.id ?? null,
       })),
       billing: order.billingInfo,
       shipping: order.shippingInfo,

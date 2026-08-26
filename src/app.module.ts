@@ -32,6 +32,13 @@ import { AdminOrdersModule } from './api/admin/orders/admin-orders.module';
 import { AdminDashboardModule } from './api/admin/dashboard/admin-dashboard.module';
 import { SiteSettingsAdminModule } from './api/admin/site-settings/site-settings-admin.module';
 import { AdminInventoryModule } from './api/admin/inventory/admin-inventory.module';
+import { AdminReviewsModule } from './api/admin/reviews/admin-reviews.module';
+import { AdminCollectionsModule } from './api/admin/collections/admin-collections.module';
+import { AdminBannersModule } from './api/admin/banners/admin-banners.module';
+import { AdminCouponsModule } from './api/admin/coupons/admin-coupons.module';
+import { AdminCustomersModule } from './api/admin/customers/admin-customers.module';
+import { AdminPaymentMethodsModule } from './api/admin/payment-methods/admin-payment-methods.module';
+import { AdminReturnsModule } from './api/admin/returns/admin-returns.module';
 
 @Module({
   imports: [
@@ -71,6 +78,13 @@ import { AdminInventoryModule } from './api/admin/inventory/admin-inventory.modu
     AdminDashboardModule,
     SiteSettingsAdminModule,
     AdminInventoryModule,
+    AdminReviewsModule,
+    AdminCollectionsModule,
+    AdminBannersModule,
+    AdminCouponsModule,
+    AdminCustomersModule,
+    AdminPaymentMethodsModule,
+    AdminReturnsModule,
   ],
   controllers: [AppController],
   providers: [

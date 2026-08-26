@@ -26,6 +26,7 @@ export class PublicReviewsService {
 
     const where: Prisma.ReviewWhereInput = {
       deletedAt: null,
+      adminFlag: null,
       orderItem: {
         productId,
       },

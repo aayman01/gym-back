@@ -84,6 +84,122 @@ export class WishlistService {
     });
   }
 
+  private itemInclude() {
+    return {
+      product: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          status: true,
+          deletedAt: true,
+          thumbnail: { select: { url: true } },
+        },
+      },
+      variant: {
+        select: { id: true, sku: true, price: true, status: true },
+      },
+    } satisfies Prisma.WishlistItemInclude;
+  }
+
+  private mapItem(
+    item: Prisma.WishlistItemGetPayload<{ include: ReturnType<WishlistService['itemInclude']> }>,
+  ) {
+    return {
+      id: item.id,
+      productId: item.productId,
+      variantId: item.variantId,
+      createdAt: item.createdAt,
+      product: {
+        id: item.product.id,
+        title: item.product.title,
+        slug: item.product.slug,
+        thumbnailUrl: item.product.thumbnail?.url ?? null,
+      },
+      variant: item.variant
+        ? {
+            id: item.variant.id,
+            sku: item.variant.sku,
+            price: item.variant.price.toString(),
+          }
+        : null,
+    };
+  }
+
+  async getWishlist(actor: Actor) {
+    this.assertActor(actor);
+
+    const wishlist = await this.prisma.wishlist.findFirst({
+      where: actor.customerId
+        ? { customerId: actor.customerId }
+        : { customerToken: actor.guestToken },
+      include: {
+        items: {
+          orderBy: { createdAt: 'desc' },
+          include: this.itemInclude(),
+        },
+      },
+    });
+
+    if (!wishlist) {
+      return { id: '', items: [], itemCount: 0 };
+    }
+
+    const items = wishlist.items
+      .filter(
+        (i) =>
+          i.product.status === ItemStatus.ACTIVE &&
+          i.product.deletedAt === null &&
+          (i.variant === null || i.variant.status === ItemStatus.ACTIVE),
+      )
+      .map((i) => this.mapItem(i));
+
+    return { id: wishlist.id, items, itemCount: items.length };
+  }
+
+  async removeItem(itemId: string, actor: Actor) {
+    this.assertActor(actor);
+
+    const wishlist = await this.prisma.wishlist.findFirst({
+      where: actor.customerId
+        ? { customerId: actor.customerId }
+        : { customerToken: actor.guestToken },
+      select: { id: true },
+    });
+    if (!wishlist) {
+      throw new NotFoundException('Wishlist not found');
+    }
+
+    const item = await this.prisma.wishlistItem.findFirst({
+      where: { id: itemId, wishlistId: wishlist.id },
+    });
+    if (!item) {
+      throw new NotFoundException('Wishlist item not found');
+    }
+
+    await this.prisma.wishlistItem.delete({ where: { id: itemId } });
+    return { removed: true };
+  }
+
+  async clearWishlist(actor: Actor) {
+    this.assertActor(actor);
+
+    const wishlist = await this.prisma.wishlist.findFirst({
+      where: actor.customerId
+        ? { customerId: actor.customerId }
+        : { customerToken: actor.guestToken },
+      select: { id: true },
+    });
+    if (!wishlist) {
+      return { cleared: true };
+    }
+
+    await this.prisma.wishlistItem.deleteMany({
+      where: { wishlistId: wishlist.id },
+    });
+    return { cleared: true };
+  }
+
   async addToWishlist(payload: AddToWishlistDto, actor: Actor) {
     this.assertActor(actor);
 

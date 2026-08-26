@@ -1,17 +1,18 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
+import { CUSTOMER_ID_FROM_SESSION } from '../middleware/optional-customer.middleware';
 
 const CUSTOMER_HEADER = 'x-customer-id';
 
+type SessionRequest = Request & { [CUSTOMER_ID_FROM_SESSION]?: string };
+
 export const CurrentCustomerId = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): string | undefined => {
-    const request = ctx.switchToHttp().getRequest<Request>();
-    const customerId = request.headers[CUSTOMER_HEADER];
-    if (typeof customerId !== 'string') {
-      return undefined;
+    const request = ctx.switchToHttp().getRequest<SessionRequest>();
+    const headerId = request.headers[CUSTOMER_HEADER];
+    if (typeof headerId === 'string' && headerId.trim().length > 0) {
+      return headerId.trim();
     }
-
-    const trimmed = customerId.trim();
-    return trimmed.length > 0 ? trimmed : undefined;
+    return request[CUSTOMER_ID_FROM_SESSION];
   },
 );

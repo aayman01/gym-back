@@ -31,6 +31,7 @@ export const placeOrderSchema = z
     shippingAddress: shippingAddressSchema.optional(),
     billingAddress: billingAddressSchema,
     notes: z.string().max(2000).optional().nullable(),
+    couponCode: z.string().trim().min(1).max(50).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.shippingMethodId && !data.shippingAddress) {

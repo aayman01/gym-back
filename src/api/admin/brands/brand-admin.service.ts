@@ -147,6 +147,15 @@ export class BrandAdminService {
     });
   }
 
+  async delete(brandId: string) {
+    const existing = await this.brandRepository.findById(brandId);
+    if (!existing) {
+      throw new NotFoundException('Brand not found');
+    }
+    await this.brandRepository.softDelete(brandId);
+    return { id: brandId };
+  }
+
   private mapBrand(row: BrandAdminPayload): BrandAdminResponse {
     return {
       id: row.id,

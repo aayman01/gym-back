@@ -7,6 +7,8 @@ import { PublicCategoriesModule } from './categories/public-categories.module';
 import { PublicReviewsModule } from './reviews/public-reviews.module';
 import { PublicBrandsModule } from './brands/public-brands.module';
 import { PublicSiteSettingsModule } from './site-settings/public-site-settings.module';
+import { PublicCollectionsModule } from './collections/public-collections.module';
+import { PublicBannersModule } from './banners/public-banners.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { PublicSiteSettingsModule } from './site-settings/public-site-settings.m
     PublicReviewsModule,
     PublicBrandsModule,
     PublicSiteSettingsModule,
+    PublicCollectionsModule,
+    PublicBannersModule,
   ],
   controllers: [PublicMediaController, PublicProductsController],
   providers: [PublicProductsService],

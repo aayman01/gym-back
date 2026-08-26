@@ -125,6 +125,28 @@ export class UserAuthService {
     };
   }
 
+  async changePassword(
+    customerId: string,
+    dto: { currentPassword: string; newPassword: string },
+  ) {
+    const user = await this.customerRepository.findById(customerId);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isMatch = await this.comparePasswords(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+    if (!isMatch) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const passwordHash = await this.hashPassword(dto.newPassword);
+    await this.customerRepository.update(customerId, { passwordHash });
+    return { id: customerId };
+  }
+
   generateCsrfToken(): string {
     return this.sessionService.generateCsrfToken();
   }

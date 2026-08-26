@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -68,6 +69,16 @@ export class BrandAdminController {
     return sendResponse({
       success: true,
       message: 'Brand updated successfully',
+      data,
+    });
+  }
+
+  @Delete(':brandId')
+  async delete(@Param() param: BrandIdParamDto) {
+    const data = await this.brandAdminService.delete(param.brandId);
+    return sendResponse({
+      success: true,
+      message: 'Brand deleted successfully',
       data,
     });
   }

@@ -147,4 +147,12 @@ export class BrandRepository {
       data: { order: temp },
     });
   }
+
+  async softDelete(id: string, tx?: Prisma.TransactionClient) {
+    return this.client(tx).brand.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+      select: { id: true },
+    });
+  }
 }

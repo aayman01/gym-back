@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  Coupon,
+  DiscountType,
   InventoryMovementDirection,
   InventoryTransactionType,
   ItemStatus,
@@ -81,8 +83,20 @@ export class CheckoutService {
       shippingMethodBasePrice: shippingMethodBase,
       skipShipping: !needsShipping,
     });
+    const { coupon, discountAmount } = await this.resolveCoupon(
+      dto.couponCode,
+      totals.itemTotal,
+    );
+    const totalAmount = Prisma.Decimal.max(
+      new Prisma.Decimal(0),
+      totals.totalAmount.sub(discountAmount),
+    );
 
-    return this.formatTotalsResponse(totals);
+    return this.formatTotalsResponse(
+      { ...totals, totalAmount },
+      discountAmount,
+      coupon?.code ?? null,
+    );
   }
 
   async placeOrder(customerId: string, dto: PlaceOrderDto) {
@@ -128,6 +142,14 @@ export class CheckoutService {
       shippingMethodBasePrice: shippingMethod?.price ?? null,
       skipShipping: !needsShipping,
     });
+    const { coupon, discountAmount } = await this.resolveCoupon(
+      dto.couponCode,
+      totals.itemTotal,
+    );
+    const totalAmount = Prisma.Decimal.max(
+      new Prisma.Decimal(0),
+      totals.totalAmount.sub(discountAmount),
+    );
 
     const billing = dto.billingAddress;
     const shippingPayload =
@@ -186,11 +208,12 @@ export class CheckoutService {
           status: OrderStatus.PENDING,
           paymentStatus: PaymentStatus.PENDING,
           currency,
-          totalAmount: totals.totalAmount,
+          totalAmount,
           taxAmount: totals.taxAmount,
           shippingAmount: totals.shippingAmount,
-          discountAmount: new Prisma.Decimal(0),
+          discountAmount,
           paymentMethodId: paymentMethod.id,
+          couponId: coupon?.id ?? null,
           items: { create: createdItems },
           billingInfo: {
             create: {
@@ -252,6 +275,13 @@ export class CheckoutService {
         await this.deductStock(tx, row);
       }
 
+      if (coupon) {
+        await tx.coupon.update({
+          where: { id: coupon.id },
+          data: { redemptionCount: { increment: 1 } },
+        });
+      }
+
       return newOrder;
     });
 
@@ -261,7 +291,8 @@ export class CheckoutService {
         totals.itemTotal,
         totals.taxAmount,
         totals.shippingAmount,
-        totals.totalAmount,
+        totalAmount,
+        discountAmount,
       ),
     };
   }
@@ -280,18 +311,68 @@ export class CheckoutService {
     throw new BadRequestException('Could not allocate order number');
   }
 
-  private formatTotalsResponse(totals: {
-    itemTotal: Prisma.Decimal;
-    taxAmount: Prisma.Decimal;
-    shippingAmount: Prisma.Decimal;
-    totalAmount: Prisma.Decimal;
-  }) {
+  private formatTotalsResponse(
+    totals: {
+      itemTotal: Prisma.Decimal;
+      taxAmount: Prisma.Decimal;
+      shippingAmount: Prisma.Decimal;
+      totalAmount: Prisma.Decimal;
+    },
+    discountAmount: Prisma.Decimal = new Prisma.Decimal(0),
+    couponCode: string | null = null,
+  ) {
     return {
-      itemTotal: totals.itemTotal.toString(),
-      taxAmount: totals.taxAmount.toString(),
-      shippingAmount: totals.shippingAmount.toString(),
-      totalAmount: totals.totalAmount.toString(),
+      itemTotal: totals.itemTotal.toFixed(2),
+      taxAmount: totals.taxAmount.toFixed(2),
+      shippingAmount: totals.shippingAmount.toFixed(2),
+      discountAmount: discountAmount.toFixed(2),
+      totalAmount: totals.totalAmount.toFixed(2),
+      couponCode,
     };
+  }
+
+  private async resolveCoupon(
+    code: string | undefined,
+    itemTotal: Prisma.Decimal,
+  ): Promise<{ coupon: Coupon | null; discountAmount: Prisma.Decimal }> {
+    if (!code?.trim()) {
+      return { coupon: null, discountAmount: new Prisma.Decimal(0) };
+    }
+
+    const coupon = await this.prisma.coupon.findFirst({
+      where: {
+        code: code.trim().toUpperCase(),
+        deletedAt: null,
+        isActive: true,
+      },
+    });
+    if (!coupon) {
+      throw new BadRequestException('Invalid coupon code');
+    }
+
+    const now = new Date();
+    if (now < coupon.startDate || now > coupon.endDate) {
+      throw new BadRequestException('Coupon is not valid at this time');
+    }
+    if (
+      coupon.maxRedemptions != null &&
+      coupon.redemptionCount >= coupon.maxRedemptions
+    ) {
+      throw new BadRequestException('Coupon has reached its redemption limit');
+    }
+
+    let discount =
+      coupon.type === DiscountType.PERCENTAGE
+        ? itemTotal.mul(coupon.value).div(100)
+        : new Prisma.Decimal(coupon.value);
+    if (discount.gt(itemTotal)) {
+      discount = itemTotal;
+    }
+    if (discount.lt(0)) {
+      discount = new Prisma.Decimal(0);
+    }
+
+    return { coupon, discountAmount: discount.toDecimalPlaces(2) };
   }
 
   private mapOrderResponse(
@@ -332,6 +413,7 @@ export class CheckoutService {
     taxAmount: Prisma.Decimal,
     shippingAmount: Prisma.Decimal,
     totalAmount: Prisma.Decimal,
+    discountAmount: Prisma.Decimal = new Prisma.Decimal(0),
   ) {
     return {
       id: order.id,
@@ -343,6 +425,7 @@ export class CheckoutService {
       itemTotal: itemTotal.toString(),
       taxAmount: taxAmount.toString(),
       shippingAmount: shippingAmount.toString(),
+      discountAmount: discountAmount.toString(),
       totalAmount: totalAmount.toString(),
       items: order.items.map((i) => ({
         id: i.id,

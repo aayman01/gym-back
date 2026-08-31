@@ -20,6 +20,10 @@ export type SiteSettingsAdminResponse = {
   primaryHoverColor: string | null;
   currency: string;
   description: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  contactAddress: string | null;
+  contactFormEnabled: boolean;
   headerLogoId: string | null;
   headerLogoUrl: string | null;
   footerLogoId: string | null;
@@ -86,6 +90,18 @@ export class SiteSettingsAdminService {
       if (payload.description !== undefined) {
         data.description = payload.description;
       }
+      if (payload.contactPhone !== undefined) {
+        data.contactPhone = payload.contactPhone;
+      }
+      if (payload.contactEmail !== undefined) {
+        data.contactEmail = payload.contactEmail;
+      }
+      if (payload.contactAddress !== undefined) {
+        data.contactAddress = payload.contactAddress;
+      }
+      if (payload.contactFormEnabled !== undefined) {
+        data.contactFormEnabled = payload.contactFormEnabled;
+      }
 
       this.applyMediaRelation(data, 'headerLogo', payload.headerLogoId);
       this.applyMediaRelation(data, 'footerLogo', payload.footerLogoId);
@@ -125,6 +141,10 @@ export class SiteSettingsAdminService {
       primaryHoverColor: row.primaryHoverColor,
       currency: row.currency,
       description: row.description,
+      contactPhone: row.contactPhone,
+      contactEmail: row.contactEmail,
+      contactAddress: row.contactAddress,
+      contactFormEnabled: row.contactFormEnabled,
       headerLogoId: row.headerLogoId,
       headerLogoUrl: row.headerLogo?.url ?? null,
       footerLogoId: row.footerLogoId,

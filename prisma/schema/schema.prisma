@@ -74,6 +74,12 @@ enum OrderEventActionBy {
   SYSTEM
 }
 
+enum ContactMessageStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
 enum CollectionType {
   DEFAULT
   BANNER

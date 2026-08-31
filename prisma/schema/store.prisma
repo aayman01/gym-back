@@ -20,6 +20,10 @@ model StoreConfig {
   bannerLayoutType       EcommerceBannerLayout @default(FULL_WIDTH_SLIDER)
   showHomeTopHeader      Boolean               @default(true)
   showHomeCategoryNavbar Boolean               @default(true)
+  contactPhone           String?               @db.VarChar(50)
+  contactEmail           String?               @db.VarChar(255)
+  contactAddress         String?               @db.Text
+  contactFormEnabled     Boolean               @default(true)
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
   deletedAt              DateTime?
@@ -32,6 +36,22 @@ model StoreConfig {
 
   @@index([deletedAt])
   @@map("store_config")
+}
+
+model ContactMessage {
+  id        String               @id @default(uuid())
+  name      String               @db.VarChar(150)
+  email     String               @db.VarChar(255)
+  phone     String?              @db.VarChar(50)
+  subject   String?              @db.VarChar(255)
+  message   String               @db.Text
+  status    ContactMessageStatus @default(NEW)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_messages")
 }
 
 model Banner {

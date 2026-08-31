@@ -9,6 +9,7 @@ import { PublicBrandsModule } from './brands/public-brands.module';
 import { PublicSiteSettingsModule } from './site-settings/public-site-settings.module';
 import { PublicCollectionsModule } from './collections/public-collections.module';
 import { PublicBannersModule } from './banners/public-banners.module';
+import { PublicContactModule } from './contact/public-contact.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PublicBannersModule } from './banners/public-banners.module';
     PublicSiteSettingsModule,
     PublicCollectionsModule,
     PublicBannersModule,
+    PublicContactModule,
   ],
   controllers: [PublicMediaController, PublicProductsController],
   providers: [PublicProductsService],

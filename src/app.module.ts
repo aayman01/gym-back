@@ -39,6 +39,7 @@ import { AdminCouponsModule } from './api/admin/coupons/admin-coupons.module';
 import { AdminCustomersModule } from './api/admin/customers/admin-customers.module';
 import { AdminPaymentMethodsModule } from './api/admin/payment-methods/admin-payment-methods.module';
 import { AdminReturnsModule } from './api/admin/returns/admin-returns.module';
+import { AdminContactMessagesModule } from './api/admin/contact-messages/admin-contact-messages.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { AdminReturnsModule } from './api/admin/returns/admin-returns.module';
     AdminCustomersModule,
     AdminPaymentMethodsModule,
     AdminReturnsModule,
+    AdminContactMessagesModule,
   ],
   controllers: [AppController],
   providers: [

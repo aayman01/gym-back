@@ -13,6 +13,10 @@ export type PublicSiteSettingsCachePayload = {
   footerLogoUrl: string | null;
   emailLogoUrl: string | null;
   faviconUrl: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  contactAddress: string | null;
+  contactFormEnabled: boolean;
 };
 
 const TTL_MS = 60_000;

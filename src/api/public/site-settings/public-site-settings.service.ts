@@ -29,6 +29,10 @@ export class PublicSiteSettingsService {
         copyrightText: true,
         primaryColor: true,
         primaryHoverColor: true,
+        contactPhone: true,
+        contactEmail: true,
+        contactAddress: true,
+        contactFormEnabled: true,
         headerLogo: { select: { url: true } },
         footerLogo: { select: { url: true } },
         emailLogo: { select: { url: true } },
@@ -49,6 +53,10 @@ export class PublicSiteSettingsService {
       footerLogoUrl: row?.footerLogo?.url ?? null,
       emailLogoUrl: row?.emailLogo?.url ?? null,
       faviconUrl: row?.favicon?.url ?? null,
+      contactPhone: row?.contactPhone ?? null,
+      contactEmail: row?.contactEmail ?? null,
+      contactAddress: row?.contactAddress ?? null,
+      contactFormEnabled: row?.contactFormEnabled ?? true,
     };
 
     this.siteSettingsCache.set(payload);

@@ -83,6 +83,11 @@ export type PublicProductDetail = {
     slug: string;
     logo: { id: string; url: string } | null;
   } | null;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
   attributes: {
     id: string;
     name: string;
@@ -523,6 +528,13 @@ export class PublicProductsService {
             logo: product.brand.logo
               ? { id: product.brand.logo.id, url: product.brand.logo.url }
               : null,
+          }
+        : null,
+      category: product.category
+        ? {
+            id: product.category.id,
+            name: product.category.name,
+            slug: product.category.slug,
           }
         : null,
       attributes,

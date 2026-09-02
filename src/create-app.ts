@@ -1,12 +1,18 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
-import { Logger } from '@nestjs/common';
+import { Logger, type INestApplication } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { ZodExceptionFilter } from '@common/filters/zod-exception.filter';
+import { AppModule } from './app.module';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { json, type Request, type Response } from 'express';
+import express, {
+  json,
+  type Express,
+  type Request,
+  type Response,
+} from 'express';
 
 const logger = new Logger('Bootstrap');
 
@@ -35,29 +41,29 @@ function getDatabaseDriverError(error: unknown): {
   };
 }
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
-    bodyParser: false,
-  });
+export async function createApp(): Promise<{
+  app: INestApplication;
+  expressApp: Express;
+}> {
+  const expressApp = express();
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(expressApp),
+    {
+      logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+      bodyParser: false,
+    },
+  );
 
-  // Security
   app.use(helmet());
   app.use(cookieParser());
   app.use(json({ limit: '12mb' }));
-
-  // Global filters
   app.useGlobalFilters(new ZodExceptionFilter());
-
-  // Global prefix
   app.setGlobalPrefix('api/v1');
 
-  // Resolve services
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT') ?? Number(process.env.PORT ?? 3000);
   const allowedOrigins = configService.get<string[]>('ALLOWED_ORIGINS')!;
 
-  // CORS
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
@@ -81,7 +87,6 @@ async function bootstrap() {
     });
   });
 
-  // Verify database connection
   const prismaService = app.get(PrismaService);
   try {
     await prismaService.$queryRaw`SELECT 1`;
@@ -103,8 +108,7 @@ async function bootstrap() {
       : new Error('Database connection failed during bootstrap');
   }
 
-  await app.listen(port);
-  logger.log(`Application is running on: http://localhost:${port}/api/v1`);
-}
+  await app.init();
 
-void bootstrap();
+  return { app, expressApp };
+}

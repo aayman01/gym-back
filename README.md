@@ -203,11 +203,12 @@ Copy `.env.example` to `.env` and fill in values validated by `src/config/env.sc
 ```bash
 pnpm install
 cp .env.example .env   # edit DATABASE_URL, JWT secrets, Cloudinary credentials
-pnpm run prisma:generate
 pnpm run prisma:migrate   # or prisma:push for quick local iteration
 pnpm run prisma:seed      # optional: tax + 10 categories + 20 products with images
 pnpm run start:dev
 ```
+
+`pnpm install` runs `prisma generate` via `postinstall`. Production builds use `prisma generate && nest build` so the client exists before Nest compiles.
 
 - API base URL: `http://localhost:<PORT>/api/v1`
 - Health: `GET http://localhost:<PORT>/api/v1/health`

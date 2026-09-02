@@ -1,5 +1,9 @@
 {
-  "version": 2,
-  "buildCommand": "pnpm run build",
-  "installCommand": "pnpm install --frozen-lockfile"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "functions": {
+    "src/main.ts": {
+      "maxDuration": 30
+    }
+  }
 }

@@ -5,6 +5,7 @@
   "author": "Aayman Alfee Rahman",
   "private": true,
   "license": "UNLICENSED",
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "postinstall": "prisma generate",
     "build": "prisma generate && nest build",

@@ -4,7 +4,7 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test', 'provision'])
     .default('development'),
-  PORT: z.coerce.number(),
+  PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().url(),
   ALLOWED_ORIGINS: z.string().transform((val) => val.split(',')),
   ADMIN_JWT_ACCESS_SECRET: z.string().min(16),

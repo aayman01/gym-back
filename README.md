@@ -236,6 +236,38 @@ Safe to re-run (idempotent by slug / media `key`). Seeded image host `images.uns
 
 ---
 
+## Deploy to Vercel
+
+Vercel auto-detects [`src/main.ts`](src/main.ts) as the NestJS backend entrypoint. [`vercel.json`](vercel.json) runs `pnpm install --frozen-lockfile` and `pnpm run build` (includes `prisma generate`).
+
+### Required environment variables
+
+Set these in **Vercel → Project → Settings → Environment Variables** (Production):
+
+| Variable | Notes |
+|----------|-------|
+| `NODE_ENV` | `production` |
+| `DATABASE_URL` | **Neon pooled URL** (host with `-pooler` or `?pgbouncer=true`) — required for serverless |
+| `ALLOWED_ORIGINS` | Comma-separated frontend URLs, e.g. `https://your-store.vercel.app,https://your-admin.vercel.app` |
+| `ADMIN_JWT_ACCESS_SECRET` | Min 16 characters |
+| `ADMIN_JWT_REFRESH_SECRET` | Min 16 characters |
+| `CUSTOMER_JWT_ACCESS_SECRET` | Min 16 characters |
+| `CUSTOMER_JWT_REFRESH_SECRET` | Min 16 characters |
+| `CLOUDINARY_CLOUD_NAME` | Non-empty |
+| `CLOUDINARY_API_KEY` | Non-empty |
+| `CLOUDINARY_API_SECRET` | Non-empty |
+| `CLOUDINARY_UPLOAD_FOLDER` | e.g. `gym-backend/admin-media` |
+
+`PORT` is injected by Vercel automatically (defaults to `3000` in [`env.schema.ts`](src/config/env.schema.ts) if unset).
+
+### Verify deployment
+
+1. Redeploy after setting env vars.
+2. Check **Deployments → Functions → Runtime Logs** if boot fails (errors are thrown, not silently exited).
+3. Hit `GET /health` or `GET /api/v1/health` — expect `200` with `{ status: "ok", ... }`.
+
+---
+
 ## Testing note
 
 E2E and unit test coverage is minimal today; improving tests is a natural next step for production hardening. The **design** above (auth, CSRF, guest cart, module split) is what this repo demonstrates for backend depth.

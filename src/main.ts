@@ -54,7 +54,7 @@ async function bootstrap() {
 
   // Resolve services
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT')!;
+  const port = configService.get<number>('PORT') ?? Number(process.env.PORT ?? 3000);
   const allowedOrigins = configService.get<string[]>('ALLOWED_ORIGINS')!;
 
   // CORS
@@ -96,7 +96,9 @@ async function bootstrap() {
       logger.error(error instanceof Error ? error.message : String(error));
     }
 
-    process.exit(1);
+    throw error instanceof Error
+      ? error
+      : new Error('Database connection failed during bootstrap');
   }
 
   await app.listen(port);

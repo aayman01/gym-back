@@ -205,11 +205,22 @@ pnpm install
 cp .env.example .env   # edit DATABASE_URL, JWT secrets, Cloudinary credentials
 pnpm run prisma:generate
 pnpm run prisma:migrate   # or prisma:push for quick local iteration
+pnpm run prisma:seed      # optional: tax + 10 categories + 20 products with images
 pnpm run start:dev
 ```
 
 - API base URL: `http://localhost:<PORT>/api/v1`
 - Health: `GET http://localhost:<PORT>/api/v1/health`
+
+### Seed data
+
+`pnpm run prisma:seed` upserts:
+
+- 1 default tax (**Standard VAT** 15%)
+- 10 gym/supplement categories with Unsplash images
+- 20 products (2 per category) with thumbnails, gallery image, base variant, and inventory
+
+Safe to re-run (idempotent by slug / media `key`). Seeded image host `images.unsplash.com` is allowlisted in the storefront `next.config.ts`.
 
 ### Scripts (from `package.json`)
 
